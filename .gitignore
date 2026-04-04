@@ -1,6 +1,9 @@
 # Presentación (demasiado grande)
 source/MollaDans_YIB2024.pptx
 
+# Configuración interna de Claude Code
+.claude/
+
 # Archivos temporales
 *.tmp
 *.bak

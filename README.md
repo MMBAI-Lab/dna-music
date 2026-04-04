@@ -107,3 +107,13 @@ Restricciones estilísticas del Contrapunctus 1 (J.S. Bach) aplicadas sobre los 
 | prueba3 | Secuencia ADN diseñada para aproximar el Contrapunctus 1 (greedy) | 2 | 149 |
 
 **Valoración:** prueba2 resultó muy satisfactoria. prueba3 sonó monótona — la búsqueda greedy tiende a elegir siempre los mismos tetranucleótidos (los que tienen notas centrales del registro), lo que genera poca variedad rítmica y melódica. La secuencia diseñada algorítmicamente pierde la riqueza que surge de usar una secuencia de ADN real.
+
+---
+
+## Aproximación 6 — Blues/Jazz (La Dorian, swing)
+
+Basada en aprox5/prueba2. Cambios: escala La Dorian (A B C D E F# G), registros centrados en La, tempo 108 BPM, swing 2:1 en corcheas. Mismas reglas de corrección armónica SATB.
+
+| Prueba | Descripción | Pistas | Notas |
+|--------|-------------|--------|-------|
+| prueba1 | 4 voces SATB, La Dorian, 108 BPM, swing 2:1 | 5 | 231 |
