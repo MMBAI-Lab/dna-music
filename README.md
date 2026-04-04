@@ -117,3 +117,5 @@ Basada en aprox5/prueba2. Cambios: escala La Dorian (A B C D E F# G), registros 
 | Prueba | Descripción | Pistas | Notas |
 |--------|-------------|--------|-------|
 | prueba1 | 4 voces SATB, La Dorian, 108 BPM, swing 2:1 | 5 | 231 |
+
+**Valoración:** resultado insatisfactorio. Demasiado rápida, no logra el feel jazz/blues. Se sigue prefiriendo aprox5/prueba2. El swing MIDI no es suficiente sin acordes de séptima y fraseo idiomático.

@@ -1,5 +1,7 @@
 # Aproximación 6 — Blues/Jazz (La Dorian, swing)
 
+**Valoración:** resultado insatisfactorio. Suena demasiado rápida y no logra el feel jazz/blues buscado. Se sigue prefiriendo aprox5/prueba2. Posibles causas: 108 BPM es demasiado veloz para la densidad de notas generada por los tetranucleótidos solapados; el swing 2:1 en MIDI no es suficiente sin un contexto armónico de acordes de séptima; La Dorian sola no basta para sonar jazz sin fraseo idiomático.
+
 Basada en aprox5/prueba2 (4 voces SATB con corrección armónica), con las siguientes modificaciones:
 
 **Escala: La Dorian** (A, B, C, D, E, F#, G)
