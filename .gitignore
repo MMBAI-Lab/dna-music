@@ -1,0 +1,8 @@
+# Presentación (demasiado grande)
+source/MollaDans_YIB2024.pptx
+
+# Archivos temporales
+*.tmp
+*.bak
+Thumbs.db
+.DS_Store
