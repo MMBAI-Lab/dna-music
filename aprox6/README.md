@@ -77,3 +77,16 @@ Idéntica a prueba1 en notas, duraciones y reglas. Añade asignación de instrum
 | Bajo | Contrabass | 43 |
 
 Las voces de corrección (Alto y Tenor) en piano crean contraste tímbrico respecto a las voces de datos (clarinete soprano, contrabajo bajo).
+
+---
+
+## prueba3 — Grand Piano (S+A+T) + Contrabajo (B)
+
+Igual que prueba2 pero la soprano también en Grand Piano. Solo el bajo usa un instrumento diferente.
+
+| Voz | Instrumento | Programa GM |
+|---|---|---|
+| Soprano | Acoustic Grand Piano | 0 |
+| Alto | Acoustic Grand Piano | 0 |
+| Tenor | Acoustic Grand Piano | 0 |
+| Bajo | Contrabass | 43 |
