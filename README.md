@@ -19,6 +19,8 @@ La escala musical utilizada es la escala temperada cromática C1–C7 (84 notas)
 | `notas_256_minorgroove_aprox3_4.csv` | Ídem para minor groove |
 | `notas_256_majorgroove_aprox5.csv` | 256 tetranucleótidos → nota quantizada a Re menor, registro soprano D4–D6 |
 | `notas_256_minorgroove_aprox5.csv` | 256 tetranucleótidos → nota quantizada a Re menor, registro bajo D2–D4 |
+| `notas_256_majorgroove_aprox3_6.csv` | Extiende aprox3_4 añadiendo columna `aprox6_figura` (normalización logarítmica) |
+| `notas_256_minorgroove_aprox3_6.csv` | Ídem para minor groove |
 
 **Secuencia usada en todas las pruebas:**
 ```
@@ -107,4 +109,16 @@ Restricciones estilísticas del Contrapunctus 1 (J.S. Bach) aplicadas sobre los 
 | prueba3 | Secuencia ADN diseñada para aproximar el Contrapunctus 1 (greedy) | 2 | 149 |
 
 **Valoración:** prueba2 resultó muy satisfactoria. prueba3 sonó monótona — la búsqueda greedy tiende a elegir siempre los mismos tetranucleótidos (los que tienen notas centrales del registro), lo que genera poca variedad rítmica y melódica. La secuencia diseñada algorítmicamente pierde la riqueza que surge de usar una secuencia de ADN real.
+
+---
+
+## Aproximación 6 — Normalización logarítmica de duración
+
+Idéntica a aprox5/prueba2 (4 voces SATB, Re menor, 72 BPM) salvo por el método de asignación de figuras: se sustituye la normalización lineal del tiempo de vida media por una **normalización logarítmica**.
+
+**Motivación:** la normalización lineal concentra valores en corcheas/corcheas con punto porque los tiempos se agrupan en la parte baja del rango. La escala logarítmica redistribuye mejor hacia negras y valores más largos.
+
+| Prueba | Descripción | Pistas | Notas |
+|--------|-------------|--------|-------|
+| prueba1 | SATB Re menor 72 BPM, duración por normalización logarítmica | 4 | 231 |
 

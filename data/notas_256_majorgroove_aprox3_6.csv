@@ -1,0 +1,257 @@
+﻿tetranucleotide,canonico,ocupacion_pct,ocupacion_x10,nota,frecuencia_hz,tiempo_vida_media_ps,aprox3_figura_ps,aprox3_figura,aprox4_figura,aprox6_figura
+AAAA,AAAA,27.700100,277.001000,C#4,277.183,5.260179,6,negra,corchea con punto,negra
+AAAC,AAAC,28.656800,286.568000,D4,293.665,5.587319,6,negra,negra,negra
+AAAG,AAAG,20.592600,205.926000,G#3,207.652,4.698932,4.5,corchea con punto,corchea con punto,negra
+AAAT,AAAT,30.198000,301.980000,D4,293.665,5.509277,6,negra,negra,negra
+AACA,AACA,34.054400,340.544000,F4,349.228,6.455933,6,negra,negra,negra con punto
+AACC,GGTT,38.662100,386.621000,G4,391.995,5.445443,6,negra,negra,negra
+AACG,AACG,33.198300,331.983000,E4,329.628,5.971991,6,negra,negra,negra con punto
+AACT,AACT,49.185800,491.858000,B4,493.883,6.861093,6,negra,negra con punto,negra con punto
+AAGA,AAGA,31.245300,312.453000,D#4,311.127,4.237398,4.5,corchea con punto,corchea con punto,corchea con punto
+AAGC,AAGC,31.021900,310.219000,D#4,311.127,4.530993,4.5,corchea con punto,corchea con punto,corchea con punto
+AAGG,AAGG,27.671900,276.719000,C#4,277.183,4.325965,4.5,corchea con punto,corchea con punto,corchea con punto
+AAGT,AAGT,31.774100,317.741000,D#4,311.127,4.930651,4.5,corchea con punto,corchea con punto,negra
+AATA,AATA,26.152600,261.526000,C4,261.626,4.966218,4.5,corchea con punto,corchea con punto,negra
+AATC,GATT,27.017200,270.172000,C#4,277.183,5.451632,6,negra,negra,negra
+AATG,AATG,28.341000,283.410000,C#4,277.183,5.472186,6,negra,negra,negra
+AATT,AATT,28.784900,287.849000,D4,293.665,5.362114,6,negra,corchea con punto,negra
+ACAA,TTGT,16.023900,160.239000,E3,164.814,3.734565,3,corchea,corchea,corchea con punto
+ACAC,ACAC,24.361500,243.615000,B3,246.942,4.615144,4.5,corchea con punto,corchea con punto,corchea con punto
+ACAG,ACAG,19.761100,197.611000,G3,195.998,4.135679,4.5,corchea con punto,corchea con punto,corchea con punto
+ACAT,ATGT,25.678700,256.787000,C4,261.626,4.821838,4.5,corchea con punto,corchea con punto,negra
+ACCA,ACCA,36.341500,363.415000,F#4,369.994,5.529832,6,negra,negra,negra
+ACCC,GGGT,45.319100,453.191000,A#4,466.164,6.086859,6,negra,negra,negra con punto
+ACCG,ACCG,37.689900,376.899000,F#4,369.994,5.686038,6,negra,negra,negra
+ACCT,AGGT,58.496900,584.969000,D5,587.330,7.305811,6,negra,negra con punto,blanca
+ACGA,ACGA,17.918000,179.180000,F3,174.614,3.527582,3,corchea,corchea,corchea
+ACGC,ACGC,16.372200,163.722000,E3,164.814,3.466777,3,corchea,corchea,corchea
+ACGG,ACGG,18.834100,188.341000,F#3,184.997,3.725983,3,corchea,corchea,corchea con punto
+ACGT,ACGT,21.451200,214.512000,A3,220.000,3.896110,4.5,corchea con punto,corchea,corchea con punto
+ACTA,ACTA,26.030500,260.305000,C4,261.626,4.440928,4.5,corchea con punto,corchea con punto,corchea con punto
+ACTC,ACTC,33.329600,333.296000,E4,329.628,4.711630,4.5,corchea con punto,corchea con punto,negra
+ACTG,ACTG,24.294600,242.946000,B3,246.942,4.666833,4.5,corchea con punto,corchea con punto,negra
+ACTT,AAGT,31.774100,317.741000,D#4,311.127,4.930651,4.5,corchea con punto,corchea con punto,negra
+AGAA,AGAA,39.664300,396.643000,G4,391.995,5.560910,6,negra,negra,negra
+AGAC,AGAC,54.580700,545.807000,C#5,554.365,7.235557,6,negra,negra con punto,negra con punto
+AGAG,CTCT,42.839200,428.392000,A4,440.000,6.150109,6,negra,negra,negra con punto
+AGAT,AGAT,46.253800,462.538000,A#4,466.164,6.763735,6,negra,negra,negra con punto
+AGCA,TGCT,58.139200,581.392000,D5,587.330,8.332860,9,negra con punto,blanca,blanca
+AGCC,GGCT,64.023700,640.237000,D#5,622.254,10.306289,9,negra con punto,blanca,blanca
+AGCG,AGCG,59.287500,592.875000,D5,587.330,8.217256,9,negra con punto,blanca,blanca
+AGCT,AGCT,65.986100,659.861000,E5,659.255,8.636246,9,negra con punto,blanca,blanca
+AGGA,AGGA,44.803600,448.036000,A4,440.000,5.599400,6,negra,negra,negra
+AGGC,AGGC,41.247000,412.470000,G#4,415.305,5.785399,6,negra,negra,negra
+AGGG,AGGG,47.941700,479.417000,A#4,466.164,6.537089,6,negra,negra,negra con punto
+AGGT,AGGT,58.496900,584.969000,D5,587.330,7.305811,6,negra,negra con punto,blanca
+AGTA,AGTA,39.530400,395.304000,G4,391.995,5.766820,6,negra,negra,negra
+AGTC,GACT,34.739400,347.394000,F4,349.228,6.251917,6,negra,negra,negra con punto
+AGTG,CACT,39.566900,395.669000,G4,391.995,6.091995,6,negra,negra,negra con punto
+AGTT,AACT,49.185800,491.858000,B4,493.883,6.861093,6,negra,negra con punto,negra con punto
+ATAA,ATAA,22.988900,229.889000,A#3,233.082,4.525196,4.5,corchea con punto,corchea con punto,corchea con punto
+ATAC,ATAC,27.069500,270.695000,C#4,277.183,5.081566,4.5,corchea con punto,corchea con punto,negra
+ATAG,CTAT,19.201400,192.014000,G3,195.998,4.525323,4.5,corchea con punto,corchea con punto,corchea con punto
+ATAT,ATAT,25.197200,251.972000,B3,246.942,5.477295,6,negra,negra,negra
+ATCA,TGAT,33.969100,339.691000,F4,349.228,6.210754,6,negra,negra,negra con punto
+ATCC,GGAT,43.742300,437.423000,A4,440.000,7.043168,6,negra,negra con punto,negra con punto
+ATCG,ATCG,38.760500,387.605000,G4,391.995,7.633025,9,negra con punto,negra con punto,blanca
+ATCT,AGAT,46.253800,462.538000,A#4,466.164,6.763735,6,negra,negra,negra con punto
+ATGA,ATGA,20.524400,205.244000,G#3,207.652,4.226954,4.5,corchea con punto,corchea con punto,corchea con punto
+ATGC,ATGC,21.098900,210.989000,G#3,207.652,4.538374,4.5,corchea con punto,corchea con punto,corchea con punto
+ATGG,ATGG,18.512600,185.126000,F#3,184.997,4.122798,4.5,corchea con punto,corchea con punto,corchea con punto
+ATGT,ATGT,25.678700,256.787000,C4,261.626,4.821838,4.5,corchea con punto,corchea con punto,negra
+ATTA,ATTA,22.982000,229.820000,A#3,233.082,5.078783,4.5,corchea con punto,corchea con punto,negra
+ATTC,GAAT,26.841800,268.418000,C4,261.626,5.311001,6,negra,corchea con punto,negra
+ATTG,ATTG,20.079500,200.795000,G3,195.998,4.487039,4.5,corchea con punto,corchea con punto,corchea con punto
+ATTT,AAAT,30.198000,301.980000,D4,293.665,5.509277,6,negra,negra,negra
+CAAA,CAAA,20.497800,204.978000,G#3,207.652,4.793574,4.5,corchea con punto,corchea con punto,negra
+CAAC,GTTG,21.025300,210.253000,G#3,207.652,4.391157,4.5,corchea con punto,corchea con punto,corchea con punto
+CAAG,CAAG,17.410200,174.102000,F3,174.614,4.649167,4.5,corchea con punto,corchea con punto,negra
+CAAT,ATTG,20.079500,200.795000,G3,195.998,4.487039,4.5,corchea con punto,corchea con punto,corchea con punto
+CACA,TGTG,26.385100,263.851000,C4,261.626,5.731157,6,negra,negra,negra
+CACC,GGTG,41.058000,410.580000,G#4,415.305,6.046655,6,negra,negra,negra con punto
+CACG,CGTG,33.735000,337.350000,E4,329.628,5.903094,6,negra,negra,negra con punto
+CACT,CACT,39.566900,395.669000,G4,391.995,6.091995,6,negra,negra,negra con punto
+CAGA,TCTG,25.384300,253.843000,B3,246.942,3.990176,4.5,corchea con punto,corchea con punto,corchea con punto
+CAGC,CAGC,28.352400,283.524000,C#4,277.183,4.607374,4.5,corchea con punto,corchea con punto,corchea con punto
+CAGG,CAGG,21.124600,211.246000,G#3,207.652,4.034415,4.5,corchea con punto,corchea con punto,corchea con punto
+CAGT,ACTG,24.294600,242.946000,B3,246.942,4.666833,4.5,corchea con punto,corchea con punto,negra
+CATA,TATG,22.763000,227.630000,A#3,233.082,4.776022,4.5,corchea con punto,corchea con punto,negra
+CATC,GATG,24.409100,244.091000,B3,246.942,5.036854,4.5,corchea con punto,corchea con punto,negra
+CATG,CATG,24.288700,242.887000,B3,246.942,4.827040,4.5,corchea con punto,corchea con punto,negra
+CATT,AATG,28.341000,283.410000,C#4,277.183,5.472186,6,negra,negra,negra
+CCAA,TTGG,16.115600,161.156000,E3,164.814,3.735305,3,corchea,corchea,corchea con punto
+CCAC,GTGG,17.131000,171.310000,F3,174.614,3.885109,4.5,corchea con punto,corchea,corchea con punto
+CCAG,CCAG,15.325400,153.254000,D#3,155.563,3.816751,4.5,corchea con punto,corchea,corchea con punto
+CCAT,ATGG,18.512600,185.126000,F#3,184.997,4.122798,4.5,corchea con punto,corchea con punto,corchea con punto
+CCCA,TGGG,29.003700,290.037000,D4,293.665,5.205258,4.5,corchea con punto,corchea con punto,negra
+CCCC,GGGG,36.961800,369.618000,F#4,369.994,5.174259,4.5,corchea con punto,corchea con punto,negra
+CCCG,CGGG,31.837700,318.377000,D#4,311.127,5.437509,6,negra,negra,negra
+CCCT,AGGG,47.941700,479.417000,A#4,466.164,6.537089,6,negra,negra,negra con punto
+CCGA,CCGA,17.874400,178.744000,F3,174.614,3.427629,3,corchea,corchea,corchea
+CCGC,GCGG,19.920500,199.205000,G3,195.998,3.592710,3,corchea,corchea,corchea
+CCGG,CCGG,17.805000,178.050000,F3,174.614,3.659965,3,corchea,corchea,corchea
+CCGT,ACGG,18.834100,188.341000,F#3,184.997,3.725983,3,corchea,corchea,corchea con punto
+CCTA,TAGG,20.685200,206.852000,G#3,207.652,4.076624,4.5,corchea con punto,corchea con punto,corchea con punto
+CCTC,GAGG,24.459100,244.591000,B3,246.942,4.163464,4.5,corchea con punto,corchea con punto,corchea con punto
+CCTG,CAGG,21.124600,211.246000,G#3,207.652,4.034415,4.5,corchea con punto,corchea con punto,corchea con punto
+CCTT,AAGG,27.671900,276.719000,C#4,277.183,4.325965,4.5,corchea con punto,corchea con punto,corchea con punto
+CGAA,CGAA,35.312300,353.123000,F4,349.228,6.195032,6,negra,negra,negra con punto
+CGAC,CGAC,42.919900,429.199000,A4,440.000,6.704872,6,negra,negra,negra con punto
+CGAG,CGAG,28.347900,283.479000,C#4,277.183,5.466447,6,negra,negra,negra
+CGAT,CGAT,42.198000,421.980000,G#4,415.305,7.613394,9,negra con punto,negra con punto,blanca
+CGCA,CGCA,49.989400,499.894000,B4,493.883,9.017010,9,negra con punto,blanca,blanca
+CGCC,GGCG,54.316900,543.169000,C#5,554.365,8.583310,9,negra con punto,blanca,blanca
+CGCG,CGCG,44.778800,447.788000,A4,440.000,6.882904,6,negra,negra con punto,negra con punto
+CGCT,AGCG,59.287500,592.875000,D5,587.330,8.217256,9,negra con punto,blanca,blanca
+CGGA,CGGA,43.042000,430.420000,A4,440.000,6.500929,6,negra,negra,negra con punto
+CGGC,CGGC,36.613700,366.137000,F#4,369.994,6.021693,6,negra,negra,negra con punto
+CGGG,CGGG,31.837700,318.377000,D#4,311.127,5.437509,6,negra,negra,negra
+CGGT,ACCG,37.689900,376.899000,F#4,369.994,5.686038,6,negra,negra,negra
+CGTA,TACG,31.119600,311.196000,D#4,311.127,5.894645,6,negra,negra,negra con punto
+CGTC,GACG,38.062600,380.626000,F#4,369.994,6.564555,6,negra,negra,negra con punto
+CGTG,CGTG,33.735000,337.350000,E4,329.628,5.903094,6,negra,negra,negra con punto
+CGTT,AACG,33.198300,331.983000,E4,329.628,5.971991,6,negra,negra,negra con punto
+CTAA,TTAG,14.664900,146.649000,D3,146.832,3.723852,3,corchea,corchea,corchea con punto
+CTAC,CTAC,20.250700,202.507000,G#3,207.652,4.327535,4.5,corchea con punto,corchea con punto,corchea con punto
+CTAG,CTAG,14.783000,147.830000,D3,146.832,3.877000,4.5,corchea con punto,corchea,corchea con punto
+CTAT,CTAT,19.201400,192.014000,G3,195.998,4.525323,4.5,corchea con punto,corchea con punto,corchea con punto
+CTCA,CTCA,29.445000,294.450000,D4,293.665,6.239141,6,negra,negra,negra con punto
+CTCC,GGAG,34.914400,349.144000,F4,349.228,5.130547,4.5,corchea con punto,corchea con punto,negra
+CTCG,CGAG,28.347900,283.479000,C#4,277.183,5.466447,6,negra,negra,negra
+CTCT,CTCT,42.839200,428.392000,A4,440.000,6.150109,6,negra,negra,negra con punto
+CTGA,CTGA,14.568500,145.685000,D3,146.832,3.509467,3,corchea,corchea,corchea
+CTGC,CTGC,13.348000,133.480000,C3,130.813,3.510599,3,corchea,corchea,corchea
+CTGG,CCAG,15.325400,153.254000,D#3,155.563,3.816751,4.5,corchea con punto,corchea,corchea con punto
+CTGT,ACAG,19.761100,197.611000,G3,195.998,4.135679,4.5,corchea con punto,corchea con punto,corchea con punto
+CTTA,TAAG,19.833100,198.331000,G3,195.998,4.466512,4.5,corchea con punto,corchea con punto,corchea con punto
+CTTC,GAAG,23.204400,232.044000,A#3,233.082,4.858644,4.5,corchea con punto,corchea con punto,negra
+CTTG,CAAG,17.410200,174.102000,F3,174.614,4.649167,4.5,corchea con punto,corchea con punto,negra
+CTTT,AAAG,20.592600,205.926000,G#3,207.652,4.698932,4.5,corchea con punto,corchea con punto,negra
+GAAA,GAAA,22.794000,227.940000,A#3,233.082,5.008349,4.5,corchea con punto,corchea con punto,negra
+GAAC,GAAC,25.443900,254.439000,C4,261.626,4.899465,4.5,corchea con punto,corchea con punto,negra
+GAAG,GAAG,23.204400,232.044000,A#3,233.082,4.858644,4.5,corchea con punto,corchea con punto,negra
+GAAT,GAAT,26.841800,268.418000,C4,261.626,5.311001,6,negra,corchea con punto,negra
+GACA,GACA,31.583800,315.838000,D#4,311.127,5.969457,6,negra,negra,negra con punto
+GACC,GACC,37.222000,372.220000,F#4,369.994,5.427767,6,negra,negra,negra
+GACG,GACG,38.062600,380.626000,F#4,369.994,6.564555,6,negra,negra,negra con punto
+GACT,GACT,34.739400,347.394000,F4,349.228,6.251917,6,negra,negra,negra con punto
+GAGA,GAGA,36.058800,360.588000,F#4,369.994,4.871231,4.5,corchea con punto,corchea con punto,negra
+GAGC,GCTC,24.248900,242.489000,B3,246.942,4.098036,4.5,corchea con punto,corchea con punto,corchea con punto
+GAGG,GAGG,24.459100,244.591000,B3,246.942,4.163464,4.5,corchea con punto,corchea con punto,corchea con punto
+GAGT,ACTC,33.329600,333.296000,E4,329.628,4.711630,4.5,corchea con punto,corchea con punto,negra
+GATA,GATA,23.725100,237.251000,A#3,233.082,4.729413,4.5,corchea con punto,corchea con punto,negra
+GATC,GATC,23.762500,237.625000,A#3,233.082,5.157240,4.5,corchea con punto,corchea con punto,negra
+GATG,GATG,24.409100,244.091000,B3,246.942,5.036854,4.5,corchea con punto,corchea con punto,negra
+GATT,GATT,27.017200,270.172000,C#4,277.183,5.451632,6,negra,negra,negra
+GCAA,GCAA,16.298300,162.983000,E3,164.814,3.976068,4.5,corchea con punto,corchea con punto,corchea con punto
+GCAC,GTGC,22.392700,223.927000,A3,220.000,4.370842,4.5,corchea con punto,corchea con punto,corchea con punto
+GCAG,CTGC,13.348000,133.480000,C3,130.813,3.510599,3,corchea,corchea,corchea
+GCAT,GCAT,21.410000,214.100000,A3,220.000,4.364934,4.5,corchea con punto,corchea con punto,corchea con punto
+GCCA,TGGC,31.836400,318.364000,D#4,311.127,4.976848,4.5,corchea con punto,corchea con punto,negra
+GCCC,GGGC,40.963700,409.637000,G#4,415.305,5.886604,6,negra,negra,negra con punto
+GCCG,GCCG,35.839600,358.396000,F4,349.228,5.737457,6,negra,negra,negra
+GCCT,AGGC,41.247000,412.470000,G#4,415.305,5.785399,6,negra,negra,negra
+GCGA,GCGA,17.785300,177.853000,F3,174.614,3.282511,3,corchea,corchea,corchea
+GCGC,GCGC,17.992900,179.929000,F#3,184.997,3.467375,3,corchea,corchea,corchea
+GCGG,GCGG,19.920500,199.205000,G3,195.998,3.592710,3,corchea,corchea,corchea
+GCGT,ACGC,16.372200,163.722000,E3,164.814,3.466777,3,corchea,corchea,corchea
+GCTA,GCTA,20.756900,207.569000,G#3,207.652,4.097619,4.5,corchea con punto,corchea con punto,corchea con punto
+GCTC,GCTC,24.248900,242.489000,B3,246.942,4.098036,4.5,corchea con punto,corchea con punto,corchea con punto
+GCTG,CAGC,28.352400,283.524000,C#4,277.183,4.607374,4.5,corchea con punto,corchea con punto,corchea con punto
+GCTT,AAGC,31.021900,310.219000,D#4,311.127,4.530993,4.5,corchea con punto,corchea con punto,corchea con punto
+GGAA,GGAA,38.469700,384.697000,G4,391.995,5.208603,4.5,corchea con punto,corchea con punto,negra
+GGAC,GGAC,41.899300,418.993000,G#4,415.305,5.947212,6,negra,negra,negra con punto
+GGAG,GGAG,34.914400,349.144000,F4,349.228,5.130547,4.5,corchea con punto,corchea con punto,negra
+GGAT,GGAT,43.742300,437.423000,A4,440.000,7.043168,6,negra,negra con punto,negra con punto
+GGCA,GGCA,52.259900,522.599000,C5,523.251,7.939700,9,negra con punto,negra con punto,blanca
+GGCC,GGCC,55.770300,557.703000,C#5,554.365,8.580310,9,negra con punto,blanca,blanca
+GGCG,GGCG,54.316900,543.169000,C#5,554.365,8.583310,9,negra con punto,blanca,blanca
+GGCT,GGCT,64.023700,640.237000,D#5,622.254,10.306289,9,negra con punto,blanca,blanca
+GGGA,GGGA,50.982000,509.820000,C5,523.251,6.340808,6,negra,negra,negra con punto
+GGGC,GGGC,40.963700,409.637000,G#4,415.305,5.886604,6,negra,negra,negra con punto
+GGGG,GGGG,36.961800,369.618000,F#4,369.994,5.174259,4.5,corchea con punto,corchea con punto,negra
+GGGT,GGGT,45.319100,453.191000,A#4,466.164,6.086859,6,negra,negra,negra con punto
+GGTA,TACC,37.629700,376.297000,F#4,369.994,5.546749,6,negra,negra,negra
+GGTC,GACC,37.222000,372.220000,F#4,369.994,5.427767,6,negra,negra,negra
+GGTG,GGTG,41.058000,410.580000,G#4,415.305,6.046655,6,negra,negra,negra con punto
+GGTT,GGTT,38.662100,386.621000,G4,391.995,5.445443,6,negra,negra,negra
+GTAA,GTAA,22.309400,223.094000,A3,220.000,4.368567,4.5,corchea con punto,corchea con punto,corchea con punto
+GTAC,GTAC,24.096000,240.960000,B3,246.942,4.968247,4.5,corchea con punto,corchea con punto,negra
+GTAG,CTAC,20.250700,202.507000,G#3,207.652,4.327535,4.5,corchea con punto,corchea con punto,corchea con punto
+GTAT,ATAC,27.069500,270.695000,C#4,277.183,5.081566,4.5,corchea con punto,corchea con punto,negra
+GTCA,TGAC,37.790900,377.909000,F#4,369.994,7.519679,9,negra con punto,negra con punto,blanca
+GTCC,GGAC,41.899300,418.993000,G#4,415.305,5.947212,6,negra,negra,negra con punto
+GTCG,CGAC,42.919900,429.199000,A4,440.000,6.704872,6,negra,negra,negra con punto
+GTCT,AGAC,54.580700,545.807000,C#5,554.365,7.235557,6,negra,negra con punto,negra con punto
+GTGA,GTGA,16.859000,168.590000,E3,164.814,3.933504,4.5,corchea con punto,corchea,corchea con punto
+GTGC,GTGC,22.392700,223.927000,A3,220.000,4.370842,4.5,corchea con punto,corchea con punto,corchea con punto
+GTGG,GTGG,17.131000,171.310000,F3,174.614,3.885109,4.5,corchea con punto,corchea,corchea con punto
+GTGT,ACAC,24.361500,243.615000,B3,246.942,4.615144,4.5,corchea con punto,corchea con punto,corchea con punto
+GTTA,GTTA,21.113600,211.136000,G#3,207.652,4.406562,4.5,corchea con punto,corchea con punto,corchea con punto
+GTTC,GAAC,25.443900,254.439000,C4,261.626,4.899465,4.5,corchea con punto,corchea con punto,negra
+GTTG,GTTG,21.025300,210.253000,G#3,207.652,4.391157,4.5,corchea con punto,corchea con punto,corchea con punto
+GTTT,AAAC,28.656800,286.568000,D4,293.665,5.587319,6,negra,negra,negra
+TAAA,TAAA,22.838700,228.387000,A#3,233.082,4.860022,4.5,corchea con punto,corchea con punto,negra
+TAAC,GTTA,21.113600,211.136000,G#3,207.652,4.406562,4.5,corchea con punto,corchea con punto,corchea con punto
+TAAG,TAAG,19.833100,198.331000,G3,195.998,4.466512,4.5,corchea con punto,corchea con punto,corchea con punto
+TAAT,TAAT,22.575200,225.752000,A3,220.000,4.710625,4.5,corchea con punto,corchea con punto,negra
+TACA,TGTA,33.687400,336.874000,E4,329.628,6.166127,6,negra,negra,negra con punto
+TACC,TACC,37.629700,376.297000,F#4,369.994,5.546749,6,negra,negra,negra
+TACG,TACG,31.119600,311.196000,D#4,311.127,5.894645,6,negra,negra,negra con punto
+TACT,AGTA,39.530400,395.304000,G4,391.995,5.766820,6,negra,negra,negra
+TAGA,TAGA,31.039100,310.391000,D#4,311.127,4.955394,4.5,corchea con punto,corchea con punto,negra
+TAGC,GCTA,20.756900,207.569000,G#3,207.652,4.097619,4.5,corchea con punto,corchea con punto,corchea con punto
+TAGG,TAGG,20.685200,206.852000,G#3,207.652,4.076624,4.5,corchea con punto,corchea con punto,corchea con punto
+TAGT,ACTA,26.030500,260.305000,C4,261.626,4.440928,4.5,corchea con punto,corchea con punto,corchea con punto
+TATA,TATA,21.624000,216.240000,A3,220.000,4.640343,4.5,corchea con punto,corchea con punto,negra
+TATC,GATA,23.725100,237.251000,A#3,233.082,4.729413,4.5,corchea con punto,corchea con punto,negra
+TATG,TATG,22.763000,227.630000,A#3,233.082,4.776022,4.5,corchea con punto,corchea con punto,negra
+TATT,AATA,26.152600,261.526000,C4,261.626,4.966218,4.5,corchea con punto,corchea con punto,negra
+TCAA,TCAA,16.406700,164.067000,E3,164.814,3.902455,4.5,corchea con punto,corchea,corchea con punto
+TCAC,GTGA,16.859000,168.590000,E3,164.814,3.933504,4.5,corchea con punto,corchea,corchea con punto
+TCAG,CTGA,14.568500,145.685000,D3,146.832,3.509467,3,corchea,corchea,corchea
+TCAT,ATGA,20.524400,205.244000,G#3,207.652,4.226954,4.5,corchea con punto,corchea con punto,corchea con punto
+TCCA,TGGA,37.314500,373.145000,F#4,369.994,5.189922,4.5,corchea con punto,corchea con punto,negra
+TCCC,GGGA,50.982000,509.820000,C5,523.251,6.340808,6,negra,negra,negra con punto
+TCCG,CGGA,43.042000,430.420000,A4,440.000,6.500929,6,negra,negra,negra con punto
+TCCT,AGGA,44.803600,448.036000,A4,440.000,5.599400,6,negra,negra,negra
+TCGA,TCGA,17.748500,177.485000,F3,174.614,3.271191,3,corchea,corchea,corchea
+TCGC,GCGA,17.785300,177.853000,F3,174.614,3.282511,3,corchea,corchea,corchea
+TCGG,CCGA,17.874400,178.744000,F3,174.614,3.427629,3,corchea,corchea,corchea
+TCGT,ACGA,17.918000,179.180000,F3,174.614,3.527582,3,corchea,corchea,corchea
+TCTA,TAGA,31.039100,310.391000,D#4,311.127,4.955394,4.5,corchea con punto,corchea con punto,negra
+TCTC,GAGA,36.058800,360.588000,F#4,369.994,4.871231,4.5,corchea con punto,corchea con punto,negra
+TCTG,TCTG,25.384300,253.843000,B3,246.942,3.990176,4.5,corchea con punto,corchea con punto,corchea con punto
+TCTT,AAGA,31.245300,312.453000,D#4,311.127,4.237398,4.5,corchea con punto,corchea con punto,corchea con punto
+TGAA,TGAA,29.710700,297.107000,D4,293.665,6.182130,6,negra,negra,negra con punto
+TGAC,TGAC,37.790900,377.909000,F#4,369.994,7.519679,9,negra con punto,negra con punto,blanca
+TGAG,CTCA,29.445000,294.450000,D4,293.665,6.239141,6,negra,negra,negra con punto
+TGAT,TGAT,33.969100,339.691000,F4,349.228,6.210754,6,negra,negra,negra con punto
+TGCA,TGCA,40.464500,404.645000,G#4,415.305,7.084617,6,negra,negra con punto,negra con punto
+TGCC,GGCA,52.259900,522.599000,C5,523.251,7.939700,9,negra con punto,negra con punto,blanca
+TGCG,CGCA,49.989400,499.894000,B4,493.883,9.017010,9,negra con punto,blanca,blanca
+TGCT,TGCT,58.139200,581.392000,D5,587.330,8.332860,9,negra con punto,blanca,blanca
+TGGA,TGGA,37.314500,373.145000,F#4,369.994,5.189922,4.5,corchea con punto,corchea con punto,negra
+TGGC,TGGC,31.836400,318.364000,D#4,311.127,4.976848,4.5,corchea con punto,corchea con punto,negra
+TGGG,TGGG,29.003700,290.037000,D4,293.665,5.205258,4.5,corchea con punto,corchea con punto,negra
+TGGT,ACCA,36.341500,363.415000,F#4,369.994,5.529832,6,negra,negra,negra
+TGTA,TGTA,33.687400,336.874000,E4,329.628,6.166127,6,negra,negra,negra con punto
+TGTC,GACA,31.583800,315.838000,D#4,311.127,5.969457,6,negra,negra,negra con punto
+TGTG,TGTG,26.385100,263.851000,C4,261.626,5.731157,6,negra,negra,negra
+TGTT,AACA,34.054400,340.544000,F4,349.228,6.455933,6,negra,negra,negra con punto
+TTAA,TTAA,16.364800,163.648000,E3,164.814,4.033421,4.5,corchea con punto,corchea con punto,corchea con punto
+TTAC,GTAA,22.309400,223.094000,A3,220.000,4.368567,4.5,corchea con punto,corchea con punto,corchea con punto
+TTAG,TTAG,14.664900,146.649000,D3,146.832,3.723852,3,corchea,corchea,corchea con punto
+TTAT,ATAA,22.988900,229.889000,A#3,233.082,4.525196,4.5,corchea con punto,corchea con punto,corchea con punto
+TTCA,TGAA,29.710700,297.107000,D4,293.665,6.182130,6,negra,negra,negra con punto
+TTCC,GGAA,38.469700,384.697000,G4,391.995,5.208603,4.5,corchea con punto,corchea con punto,negra
+TTCG,CGAA,35.312300,353.123000,F4,349.228,6.195032,6,negra,negra,negra con punto
+TTCT,AGAA,39.664300,396.643000,G4,391.995,5.560910,6,negra,negra,negra
+TTGA,TCAA,16.406700,164.067000,E3,164.814,3.902455,4.5,corchea con punto,corchea,corchea con punto
+TTGC,GCAA,16.298300,162.983000,E3,164.814,3.976068,4.5,corchea con punto,corchea con punto,corchea con punto
+TTGG,TTGG,16.115600,161.156000,E3,164.814,3.735305,3,corchea,corchea,corchea con punto
+TTGT,TTGT,16.023900,160.239000,E3,164.814,3.734565,3,corchea,corchea,corchea con punto
+TTTA,TAAA,22.838700,228.387000,A#3,233.082,4.860022,4.5,corchea con punto,corchea con punto,negra
+TTTC,GAAA,22.794000,227.940000,A#3,233.082,5.008349,4.5,corchea con punto,corchea con punto,negra
+TTTG,CAAA,20.497800,204.978000,G#3,207.652,4.793574,4.5,corchea con punto,corchea con punto,negra
+TTTT,AAAA,27.700100,277.001000,C#4,277.183,5.260179,6,negra,corchea con punto,negra
