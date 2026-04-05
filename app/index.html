@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ADN → Música · MMBAI Lab</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue:   #1a3a5c;
+      --green:  #0e6655;
+      --light:  #eaf4f1;
+      --border: #c8ddd9;
+      --text:   #1c2833;
+      --muted:  #5d6d7e;
+      --white:  #ffffff;
+      --radius: 6px;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #f4f6f7;
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    header {
+      background: var(--blue);
+      color: var(--white);
+      padding: 18px 28px;
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+    }
+    header h1 { font-size: 1.35rem; font-weight: 600; letter-spacing: 0.02em; }
+    header span { font-size: 0.82rem; opacity: 0.65; }
+
+    main {
+      max-width: 680px;
+      margin: 28px auto;
+      padding: 0 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 6px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 90px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 0.9rem;
+      letter-spacing: 0.08em;
+      resize: vertical;
+      background: var(--light);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    textarea:focus { border-color: var(--green); }
+
+    .seq-hint {
+      margin-top: 5px;
+      font-size: 0.76rem;
+      color: var(--muted);
+    }
+    .seq-hint span { font-weight: 600; }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 140px;
+      gap: 16px;
+      margin-top: 14px;
+      align-items: end;
+    }
+
+    select, input[type="number"] {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.88rem;
+      background: var(--white);
+      color: var(--text);
+      outline: none;
+    }
+    select:focus, input[type="number"]:focus { border-color: var(--green); }
+
+    .btn-generate {
+      margin-top: 16px;
+      width: 100%;
+      padding: 11px;
+      background: var(--green);
+      color: var(--white);
+      border: none;
+      border-radius: var(--radius);
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      transition: background 0.15s, opacity 0.15s;
+    }
+    .btn-generate:hover:not(:disabled) { background: #0a5244; }
+    .btn-generate:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    #status {
+      font-size: 0.83rem;
+      color: var(--muted);
+      min-height: 18px;
+    }
+    #status.error { color: #c0392b; }
+    #status.ok    { color: var(--green); }
+
+    .player { display: none; }
+    .player.visible { display: block; }
+
+    .player-controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .btn-play, .btn-stop {
+      padding: 8px 18px;
+      border-radius: var(--radius);
+      border: none;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .btn-play  { background: var(--blue); color: var(--white); }
+    .btn-stop  { background: #e8ecf0; color: var(--text); }
+    .btn-play:hover { opacity: 0.85; }
+    .btn-stop:hover { opacity: 0.75; }
+    .btn-play:disabled, .btn-stop:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .btn-download {
+      padding: 8px 18px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--white);
+      color: var(--text);
+      font-size: 0.88rem;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: border-color 0.15s;
+    }
+    .btn-download:hover { border-color: var(--blue); color: var(--blue); }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+    }
+    .stat-box {
+      background: var(--light);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      text-align: center;
+    }
+    .stat-box .val { font-size: 1.4rem; font-weight: 700; color: var(--blue); }
+    .stat-box .lbl { font-size: 0.72rem; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    .sample {
+      margin-top: 14px;
+      background: var(--light);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      font-family: 'Consolas', monospace;
+      font-size: 0.8rem;
+      color: var(--text);
+      white-space: pre;
+      overflow-x: auto;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--muted);
+      padding: 24px 0 16px;
+    }
+
+    @media (max-width: 480px) {
+      .controls { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>ADN → Música</h1>
+  <span>MMBAI Lab · Sonificación de dinámica molecular</span>
+</header>
+
+<main>
+  <div class="card">
+    <label for="seq">Secuencia de ADN</label>
+    <textarea id="seq" spellcheck="false"
+      placeholder="Pega aquí tu secuencia (A, T, C, G) — máx. 200 bases&#10;Ejemplo: GCAACGTGCTATGGAAGCGCAATAAGTACC"></textarea>
+    <p class="seq-hint">Solo se usan letras A, T, C, G · mínimo 4 bases · <span id="base-count">0</span> / 200</p>
+
+    <div class="controls">
+      <div>
+        <label for="scale">Tonalidad</label>
+        <select id="scale">
+          <option value="d_minor"    selected>Re menor natural</option>
+          <option value="g_minor">Sol menor natural</option>
+          <option value="c_minor">Do menor natural</option>
+          <option value="a_minor">La menor / Do mayor</option>
+          <option value="e_minor">Mi menor / Sol mayor</option>
+          <option value="d_major">Re mayor</option>
+          <option value="a_major">La mayor</option>
+          <option value="d_phrygian">Re frigio (flamenco)</option>
+          <option value="d_min_pent">Re menor pentatónica</option>
+          <option value="d_maj_pent">Re mayor pentatónica</option>
+        </select>
+      </div>
+      <div>
+        <label for="bpm">Tempo (BPM)</label>
+        <input type="number" id="bpm" value="72" min="30" max="240" step="1">
+      </div>
+    </div>
+
+    <button class="btn-generate" id="btn-generate" disabled>Generar música</button>
+    <p id="status">Cargando datos…</p>
+  </div>
+
+  <div class="card player" id="player">
+    <div class="player-controls">
+      <button class="btn-play" id="btn-play">▶ Reproducir</button>
+      <button class="btn-stop" id="btn-stop" disabled>■ Detener</button>
+      <a class="btn-download" id="btn-download" download="dna-music.mid">⬇ Descargar MIDI</a>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div class="sample" id="sample"></div>
+  </div>
+</main>
+
+<footer>Proyecto ABC Música Mollá · <a href="https://github.com/MMBAI-Lab/dna-music" style="color:inherit">MMBAI-Lab/dna-music</a></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
