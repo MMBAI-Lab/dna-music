@@ -1,4 +1,4 @@
-# ABC Música Mollá
+# ABC Música Molla
 
 Proyecto de sonificación de ADN: mapeo de dinámicas moleculares de los surcos del ADN (major y minor groove) a parámetros musicales.
 
