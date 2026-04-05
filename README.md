@@ -1,10 +1,21 @@
-# ABC Música Molla
+# ABC Música Mollá
 
 Proyecto de sonificación de ADN: mapeo de dinámicas moleculares de los surcos del ADN (major y minor groove) a parámetros musicales.
 
 Los datos provienen de simulaciones de dinámica molecular sobre todos los tetranucleótidos únicos (140, considerando simetría de complemento inverso). Para cada tetranucleótido se dispone de cuatro métricas: entradas, frecuencia de entrada, tiempo de vida media y ocupación.
 
 La escala musical utilizada es la escala temperada cromática C1–C7 (84 notas).
+
+## Aplicación web (`docs/`)
+
+Interfaz web que permite a cualquier usuario pegar una secuencia de ADN y generar música en el momento. Funciona completamente en el navegador (sin servidor): el algoritmo aprox7 corre en JavaScript puro, genera el archivo MIDI para descargar y reproduce audio mediante Tone.js.
+
+**Parámetros configurables:**
+- Secuencia de ADN (cualquier longitud, A/T/C/G)
+- Tonalidad (10 escalas: menores naturales, mayores, modos, pentatónicas)
+- Tempo (BPM libre)
+
+Para deploy: activar GitHub Pages en el repo apuntando a la carpeta `/docs` de la rama `main`.
 
 ## Archivos de datos (`data/`)
 
@@ -128,9 +139,28 @@ Idéntica a aprox5/prueba2 (4 voces SATB, Re menor, 72 BPM) salvo por el método
 
 ## Aproximación 7 — Correcciones con anticipación (lookahead)
 
-Rediseño del algoritmo de voces de corrección para hacerlo **universalmente aplicable a cualquier secuencia**: dado el solapamiento de 3 bases entre tetranucleótidos consecutivos, el siguiente estado siempre es conocido de antemano. El algoritmo anticipa la próxima armonía al elegir la nota actual (lookahead +1).
+Rediseño completo del algoritmo de voces de corrección para hacerlo **universalmente aplicable a cualquier secuencia** (base del motor de la app web). El solapamiento de 3 bases entre tetranucleótidos consecutivos garantiza que el siguiente estado siempre es conocido; el algoritmo usa esa información para anticipar la próxima armonía al elegir la nota actual (**lookahead +1**).
 
-Mejoras principales: penalización de semitonos cromáticos, penalización de tritono (Bb↔E en Re menor), preferencia por movimiento contrario a la soprano, verificación de paralelismos B–T. Resultado: Alto 100% consonante con Bajo en toda la secuencia.
+**Función de coste para Alto y Tenor** — para cada candidato `c` en posición i:
+
+| Penalización | Peso | Condición |
+|---|---|---|
+| Suavidad | ×1 | min(\|c − prev\|, 6) semitonos de movimiento |
+| Semitono cromático | ×12 | \|c − prev\| == 1 |
+| Tritono (Bb↔E) | ×5 | \|c − prev\| == 6 |
+| Disonancia con bajo [i] | ×15 | intervalo mod 12 ∉ {0,3,4,7,8,9} |
+| Disonancia con bajo [i+1] | ×8 | **lookahead**: misma condición en el paso siguiente |
+| Proximidad a soprano | ×5 | soprano − c < 3 st (solo Alto) |
+| 5as/8as paralelas S–A | ×20 | mismos intervalos P5/P8 en pasos i−1 e i |
+| 5as/8as paralelas B–T | ×20 | ídem para el par Bajo–Tenor (solo Tenor) |
+| Movimiento paralelo a soprano | ×3 | ambas voces suben o ambas bajan |
+| Nota repetida | ×3 | c == prev |
+| Deriva del centro de registro | ×1 | \|c − centro\| / 4 |
+
+Restricciones duras: `Alto < Soprano` ; `Bajo < Tenor < Alto`.
+La corrección post-hoc R8 (paralelismos S–A) queda absorbida en el scoring. La R7 (ajuste de soprano por paralelismos S–B) se mantiene.
+
+**Resultado:** Alto 100% consonante con Bajo en las 231 notas de la secuencia de prueba; 0 semitonos cromáticos en Alto.
 
 | Prueba | Descripción | Pistas | Notas |
 |--------|-------------|--------|-------|
