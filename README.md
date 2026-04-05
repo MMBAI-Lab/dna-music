@@ -124,3 +124,15 @@ Idéntica a aprox5/prueba2 (4 voces SATB, Re menor, 72 BPM) salvo por el método
 | prueba2 | Igual que prueba1 con instrumentos: soprano=clarinete, A+T=piano, bajo=contrabajo | 4 | 231 |
 | prueba3 | Igual que prueba2 con soprano también en Grand Piano (S+A+T=piano, B=contrabajo) | 4 | 231 |
 
+---
+
+## Aproximación 7 — Correcciones con anticipación (lookahead)
+
+Rediseño del algoritmo de voces de corrección para hacerlo **universalmente aplicable a cualquier secuencia**: dado el solapamiento de 3 bases entre tetranucleótidos consecutivos, el siguiente estado siempre es conocido de antemano. El algoritmo anticipa la próxima armonía al elegir la nota actual (lookahead +1).
+
+Mejoras principales: penalización de semitonos cromáticos, penalización de tritono (Bb↔E en Re menor), preferencia por movimiento contrario a la soprano, verificación de paralelismos B–T. Resultado: Alto 100% consonante con Bajo en toda la secuencia.
+
+| Prueba | Descripción | Pistas | Notas |
+|--------|-------------|--------|-------|
+| prueba1 | Lookahead +1, Re menor 72 BPM, Grand Piano + Contrabajo | 4 | 231 |
+
