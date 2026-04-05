@@ -121,4 +121,5 @@ Idéntica a aprox5/prueba2 (4 voces SATB, Re menor, 72 BPM) salvo por el método
 | Prueba | Descripción | Pistas | Notas |
 |--------|-------------|--------|-------|
 | prueba1 | SATB Re menor 72 BPM, duración por normalización logarítmica | 4 | 231 |
+| prueba2 | Igual que prueba1 con instrumentos: soprano=clarinete, A+T=piano, bajo=contrabajo | 4 | 231 |
 

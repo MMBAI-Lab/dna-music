@@ -62,3 +62,18 @@ Basada directamente en aprox5/prueba2. Mismas reglas R1–R9, mismo tempo, misma
 - **R9**: S+A comparten duración (major groove); T+B comparten duración (minor groove)
 
 Disonancias S–B: 88 originales → 91 tras correcciones (igual que aprox5/prueba2).
+
+---
+
+## prueba2 — SATB con instrumentos: clarinete, piano, contrabajo
+
+Idéntica a prueba1 en notas, duraciones y reglas. Añade asignación de instrumentos MIDI (General MIDI):
+
+| Voz | Instrumento | Programa GM |
+|---|---|---|
+| Soprano | Clarinet | 71 |
+| Alto | Acoustic Grand Piano | 0 |
+| Tenor | Acoustic Grand Piano | 0 |
+| Bajo | Contrabass | 43 |
+
+Las voces de corrección (Alto y Tenor) en piano crean contraste tímbrico respecto a las voces de datos (clarinete soprano, contrabajo bajo).
