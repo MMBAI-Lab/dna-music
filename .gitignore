@@ -1,6 +1,9 @@
 # Presentación (demasiado grande)
 source/MollaDans_YIB2024.pptx
 
+# Bibliografía local (no va al repo)
+papers/
+
 # Configuración interna de Claude Code
 .claude/
 
