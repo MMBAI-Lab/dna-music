@@ -344,11 +344,11 @@ function buildStats(result, bpm) {
   const disAB = result.aNotes.filter((a,i) => !isConsonant(a, result.bNotes[i])).length;
   const semiA = result.aNotes.filter((a,i) => i>0 && Math.abs(a - result.aNotes[i-1])===1).length;
   return [
-    { val: result.tetras.length, lbl: 'Tetranucleótidos' },
-    { val: dur,   lbl: 'Duración estimada' },
-    { val: `${result.seq.length} bp`, lbl: 'Bases procesadas' },
-    { val: `${disAB}/${result.tetras.length}`, lbl: 'Disonancias A–B' },
-    { val: semiA, lbl: 'Semitonos Alto' },
+    { val: result.tetras.length, lbl: 'Tetranucleotides' },
+    { val: dur,   lbl: 'Estimated duration' },
+    { val: `${result.seq.length} bp`, lbl: 'Bases processed' },
+    { val: `${disAB}/${result.tetras.length}`, lbl: 'A–B dissonances' },
+    { val: semiA, lbl: 'Alto semitones' },
   ];
 }
 
@@ -371,11 +371,11 @@ async function init() {
     const resp = await fetch('tables.json');
     if (!resp.ok) throw new Error(`tables.json: HTTP ${resp.status}`);
     tables = await resp.json();
-    setStatus('Listo. Pega tu secuencia y pulsa Generar.', 'ok');
+    setStatus('Ready. Paste your sequence and click Generate.', 'ok');
     $('btn-generate').disabled = false;
     initSynths();
   } catch (e) {
-    setStatus(`Error cargando datos: ${e.message}`, 'error');
+    setStatus(`Error loading data: ${e.message}`, 'error');
   }
 }
 
@@ -392,11 +392,11 @@ $('btn-generate').addEventListener('click', () => {
   const scaleKey = $('scale').value;
   const bpm      = parseInt($('bpm').value, 10);
 
-  if (!tables) { setStatus('Datos aún no cargados.', 'error'); return; }
-  if (bpm < 30 || bpm > 240) { setStatus('Tempo fuera de rango (30–240 BPM).', 'error'); return; }
+  if (!tables) { setStatus('Data not loaded yet.', 'error'); return; }
+  if (bpm < 30 || bpm > 240) { setStatus('Tempo out of range (30–240 BPM).', 'error'); return; }
 
   try {
-    setStatus('Generando…');
+    setStatus('Generating…');
     const result = processSequence(rawSeq, scaleKey, bpm, tables);
 
     // Build MIDI
@@ -422,7 +422,7 @@ $('btn-generate').addEventListener('click', () => {
     // Sample
     $('sample').textContent = buildSample(result);
 
-    setStatus(`Generado: ${result.tetras.length} notas · ${estimateDuration(result.sDurs, result.bDurs, bpm)} a ${bpm} BPM`, 'ok');
+    setStatus(`Generated: ${result.tetras.length} notes · ${estimateDuration(result.sDurs, result.bDurs, bpm)} at ${bpm} BPM`, 'ok');
   } catch (e) {
     setStatus(`Error: ${e.message}`, 'error');
   }

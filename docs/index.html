@@ -1,21 +1,21 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ADN → Música · MMBAI Lab</title>
+  <title>DNA → Music · MMBAI Lab</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --blue:   #1a3a5c;
-      --green:  #0e6655;
-      --light:  #eaf4f1;
-      --border: #c8ddd9;
-      --text:   #1c2833;
-      --muted:  #5d6d7e;
-      --white:  #ffffff;
-      --radius: 6px;
+      --header:  #ff992b;
+      --green:   #45b59b;
+      --light:   #d9d9d9;
+      --border:  #c8d0d0;
+      --text:    #1c2833;
+      --muted:   #5d6d7e;
+      --white:   #ffffff;
+      --radius:  6px;
     }
 
     body {
@@ -26,7 +26,7 @@
     }
 
     header {
-      background: var(--blue);
+      background: var(--header);
       color: var(--white);
       padding: 18px 28px;
       display: flex;
@@ -34,7 +34,7 @@
       gap: 12px;
     }
     header h1 { font-size: 1.35rem; font-weight: 600; letter-spacing: 0.02em; }
-    header span { font-size: 0.82rem; opacity: 0.65; }
+    header span { font-size: 0.82rem; opacity: 0.75; }
 
     main {
       max-width: 680px;
@@ -120,7 +120,7 @@
       letter-spacing: 0.04em;
       transition: background 0.15s, opacity 0.15s;
     }
-    .btn-generate:hover:not(:disabled) { background: #0a5244; }
+    .btn-generate:hover:not(:disabled) { background: #349e85; }
     .btn-generate:disabled { opacity: 0.45; cursor: not-allowed; }
 
     #status {
@@ -150,7 +150,7 @@
       cursor: pointer;
       transition: opacity 0.15s;
     }
-    .btn-play  { background: var(--blue); color: var(--white); }
+    .btn-play  { background: var(--header); color: var(--white); }
     .btn-stop  { background: #e8ecf0; color: var(--text); }
     .btn-play:hover { opacity: 0.85; }
     .btn-stop:hover { opacity: 0.75; }
@@ -170,7 +170,7 @@
       gap: 5px;
       transition: border-color 0.15s;
     }
-    .btn-download:hover { border-color: var(--blue); color: var(--blue); }
+    .btn-download:hover { border-color: var(--header); color: var(--header); }
 
     .stats {
       display: grid;
@@ -184,7 +184,7 @@
       padding: 10px 12px;
       text-align: center;
     }
-    .stat-box .val { font-size: 1.4rem; font-weight: 700; color: var(--blue); }
+    .stat-box .val { font-size: 1.4rem; font-weight: 700; color: var(--text); }
     .stat-box .lbl { font-size: 0.72rem; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.05em; }
 
     .sample {
@@ -215,31 +215,31 @@
 <body>
 
 <header>
-  <h1>Algoritmo para transformar ADN → Música</h1>
-  <span>DansLab · Sonificación molecular</span>
+  <h1>Algorithm to transform DNA → Music</h1>
+  <span>DansLab · Molecular sonification</span>
 </header>
 
 <main>
   <div class="card">
-    <label for="seq">Secuencia de ADN</label>
+    <label for="seq">DNA Sequence</label>
     <textarea id="seq" spellcheck="false"
-      placeholder="Pega aquí tu secuencia (A, T, C, G) — máx. 200 bases&#10;Ejemplo: GCAACGTGCTATGGAAGCGCAATAAGTACC"></textarea>
-    <p class="seq-hint">Solo se usan letras A, T, C, G · mínimo 4 bases · <span id="base-count">0</span> / 200</p>
+      placeholder="Paste your sequence here (A, T, C, G) — max. 200 bases&#10;Example: GCAACGTGCTATGGAAGCGCAATAAGTACC"></textarea>
+    <p class="seq-hint">Only A, T, C, G letters are used · minimum 4 bases · <span id="base-count">0</span> / 200</p>
 
     <div class="controls">
       <div>
-        <label for="scale">Tonalidad</label>
+        <label for="scale">Key</label>
         <select id="scale">
-          <option value="d_minor"    selected>Re menor natural</option>
-          <option value="g_minor">Sol menor natural</option>
-          <option value="c_minor">Do menor natural</option>
-          <option value="a_minor">La menor / Do mayor</option>
-          <option value="e_minor">Mi menor / Sol mayor</option>
-          <option value="d_major">Re mayor</option>
-          <option value="a_major">La mayor</option>
-          <option value="d_phrygian">Re frigio (flamenco)</option>
-          <option value="d_min_pent">Re menor pentatónica</option>
-          <option value="d_maj_pent">Re mayor pentatónica</option>
+          <option value="d_minor"     selected>D natural minor</option>
+          <option value="g_minor">G natural minor</option>
+          <option value="c_minor">C natural minor</option>
+          <option value="a_minor">A minor / C major</option>
+          <option value="e_minor">E minor / G major</option>
+          <option value="d_major">D major</option>
+          <option value="a_major">A major</option>
+          <option value="d_phrygian">D Phrygian (flamenco)</option>
+          <option value="d_min_pent">D minor pentatonic</option>
+          <option value="d_maj_pent">D major pentatonic</option>
         </select>
       </div>
       <div>
@@ -248,22 +248,22 @@
       </div>
     </div>
 
-    <button class="btn-generate" id="btn-generate" disabled>Generar música</button>
-    <p id="status">Cargando datos…</p>
+    <button class="btn-generate" id="btn-generate" disabled>Generate music</button>
+    <p id="status">Loading data…</p>
   </div>
 
   <div class="card player" id="player">
     <div class="player-controls">
-      <button class="btn-play" id="btn-play">▶ Reproducir</button>
-      <button class="btn-stop" id="btn-stop" disabled>■ Detener</button>
-      <a class="btn-download" id="btn-download" download="dna-music.mid">⬇ Descargar MIDI</a>
+      <button class="btn-play" id="btn-play">▶ Play</button>
+      <button class="btn-stop" id="btn-stop" disabled>■ Stop</button>
+      <a class="btn-download" id="btn-download" download="dna-music.mid">⬇ Download MIDI</a>
     </div>
     <div class="stats" id="stats"></div>
     <div class="sample" id="sample"></div>
   </div>
 </main>
 
-<footer>Proyecto DNA-music Dans/Molla · <a href="https://github.com/MMBAI-Lab/dna-music" style="color:inherit">DansLab/dna-music</a></footer>
+<footer>DNA-music project Dans/Mollá · <a href="https://github.com/MMBAI-Lab/dna-music" style="color:inherit">DansLab/dna-music</a></footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
 <script src="app.js"></script>
