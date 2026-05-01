@@ -1,0 +1,370 @@
+"use client";
+
+import { useEffect, useMemo, useRef, useState } from "react";
+import FadeIn from "@/components/FadeIn";
+import SonifBackground from "@/components/SonifBackground";
+import { asset } from "@/lib/asset";
+import type { Lang } from "@/lib/i18n";
+import { PLAYER } from "@/data/content/player";
+import {
+  buildMidi,
+  countAltoSemitones,
+  countDissonances,
+  estimateDuration,
+  midiName,
+  processSequence,
+  SCALES,
+  type ProcessResult,
+  type ScaleKey,
+  type Tables,
+} from "@/lib/dnaMusic";
+import { schedulePlayback, startPlayback, stopPlayback } from "@/lib/playback";
+
+const MAX_BASES = 200;
+
+type Status =
+  | { kind: "loading" }
+  | { kind: "ready" }
+  | { kind: "ok"; msg: string }
+  | { kind: "error"; msg: string };
+
+export default function PlayerPage({ lang }: { lang: Lang }) {
+  const c = PLAYER[lang];
+
+  const [tables, setTables] = useState<Tables | null>(null);
+  const [status, setStatus] = useState<Status>({ kind: "loading" });
+  const [seq, setSeq] = useState("");
+  const [scaleKey, setScaleKey] = useState<ScaleKey>("d_minor");
+  const [bpm, setBpm] = useState(72);
+  const [result, setResult] = useState<ProcessResult | null>(null);
+  const [midiUrl, setMidiUrl] = useState<string | null>(null);
+  const [playing, setPlaying] = useState(false);
+
+  const downloadName = useMemo(() => {
+    if (!result) return "dna-music.mid";
+    return `dna-${result.seq.slice(0, 16) || "sequence"}.mid`;
+  }, [result]);
+
+  // Load tables.json once on mount.
+  useEffect(() => {
+    let cancelled = false;
+    fetch(asset("/tables.json"))
+      .then((r) => {
+        if (!r.ok) throw new Error(`tables.json: HTTP ${r.status}`);
+        return r.json();
+      })
+      .then((j: Tables) => {
+        if (cancelled) return;
+        setTables(j);
+        setStatus({ kind: "ready" });
+      })
+      .catch((e: Error) => {
+        if (cancelled) return;
+        setStatus({ kind: "error", msg: e.message });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Revoke previous blob URL when a new one is created.
+  const lastUrlRef = useRef<string | null>(null);
+  useEffect(() => {
+    return () => {
+      if (lastUrlRef.current) URL.revokeObjectURL(lastUrlRef.current);
+    };
+  }, []);
+
+  // Cleanup playback on unmount.
+  useEffect(() => {
+    return () => {
+      stopPlayback();
+    };
+  }, []);
+
+  const cleaned = seq.toUpperCase().replace(/[^ACGT]/g, "");
+  const baseCount = Math.min(cleaned.length, MAX_BASES);
+
+  function onGenerate() {
+    if (!tables) {
+      setStatus({ kind: "error", msg: "Data not loaded yet." });
+      return;
+    }
+    if (bpm < 30 || bpm > 240) {
+      setStatus({ kind: "error", msg: "Tempo out of range (30–240 BPM)." });
+      return;
+    }
+    try {
+      stopPlayback();
+      setPlaying(false);
+      const r = processSequence(seq, scaleKey, tables);
+      const bytes = buildMidi(r, bpm);
+      const blob = new Blob([new Uint8Array(bytes)], { type: "audio/midi" });
+      const url = URL.createObjectURL(blob);
+      if (lastUrlRef.current) URL.revokeObjectURL(lastUrlRef.current);
+      lastUrlRef.current = url;
+      setMidiUrl(url);
+      setResult(r);
+      schedulePlayback(r, bpm);
+      setStatus({
+        kind: "ok",
+        msg: c.status_done(r.tetras.length, estimateDuration(r.sDurs, r.bDurs, bpm), bpm),
+      });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setStatus({ kind: "error", msg: c.status_error(msg) });
+    }
+  }
+
+  async function onPlay() {
+    await startPlayback();
+    setPlaying(true);
+  }
+
+  function onStop() {
+    stopPlayback();
+    setPlaying(false);
+  }
+
+  return (
+    <>
+      <SonifBackground />
+      <div className="relative z-10 mx-auto max-w-5xl px-6 py-24">
+        <FadeIn>
+          <a
+            href={c.algo_link_href}
+            target="_blank"
+            rel="noreferrer"
+            className="text-xs font-semibold uppercase tracking-[0.3em] text-subtle hover:text-accent"
+          >
+            {c.back}
+          </a>
+          <h1 className="mt-6 font-serif text-4xl font-semibold tracking-tight text-ink md:text-5xl">
+            {c.title}
+          </h1>
+          <p className="mt-3 text-sm font-medium uppercase tracking-[0.25em] text-accent">
+            {c.eyebrow}
+          </p>
+        </FadeIn>
+
+        <FadeIn delay={0.05}>
+          <p className="mt-10 max-w-prose text-lg leading-relaxed text-muted">
+            {c.lede}
+          </p>
+        </FadeIn>
+
+        <FadeIn>
+          <section className="mt-16 rounded-lg border border-border bg-surface/80 p-6 backdrop-blur-sm md:p-8">
+            <h2 className="font-serif text-2xl font-semibold tracking-tight text-ink">
+              {c.input_heading}
+            </h2>
+
+            <label
+              htmlFor="seq"
+              className="mt-6 block text-xs font-semibold uppercase tracking-[0.2em] text-muted"
+            >
+              {c.seq_label}
+            </label>
+            <textarea
+              id="seq"
+              spellCheck={false}
+              value={seq}
+              onChange={(e) => setSeq(e.target.value)}
+              placeholder={c.seq_placeholder}
+              className="mt-2 block h-28 w-full resize-y rounded-md border border-border bg-elevated px-3 py-2 font-mono text-sm tracking-widest text-ink outline-none transition focus:border-accent"
+            />
+            <p className="mt-2 text-xs text-subtle">
+              {c.seq_hint(baseCount, MAX_BASES)}
+            </p>
+
+            <div className="mt-6 grid gap-4 md:grid-cols-[1fr_140px]">
+              <div>
+                <label
+                  htmlFor="scale"
+                  className="block text-xs font-semibold uppercase tracking-[0.2em] text-muted"
+                >
+                  {c.scale_label}
+                </label>
+                <select
+                  id="scale"
+                  value={scaleKey}
+                  onChange={(e) => setScaleKey(e.target.value as ScaleKey)}
+                  className="mt-2 block w-full rounded-md border border-border bg-elevated px-3 py-2 text-sm text-ink outline-none transition focus:border-accent"
+                >
+                  {(Object.keys(SCALES) as ScaleKey[]).map((k) => (
+                    <option key={k} value={k}>
+                      {c.scales[k]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label
+                  htmlFor="bpm"
+                  className="block text-xs font-semibold uppercase tracking-[0.2em] text-muted"
+                >
+                  {c.bpm_label}
+                </label>
+                <input
+                  id="bpm"
+                  type="number"
+                  min={30}
+                  max={240}
+                  step={1}
+                  value={bpm}
+                  onChange={(e) => setBpm(parseInt(e.target.value, 10) || 0)}
+                  className="mt-2 block w-full rounded-md border border-border bg-elevated px-3 py-2 text-sm text-ink outline-none transition focus:border-accent"
+                />
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={onGenerate}
+              disabled={status.kind === "loading"}
+              className="mt-6 w-full rounded-md bg-accent px-4 py-3 text-sm font-semibold uppercase tracking-[0.1em] text-white transition hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {c.generate}
+            </button>
+
+            <p
+              className={`mt-3 min-h-[1.25rem] text-xs ${
+                status.kind === "error"
+                  ? "text-accent"
+                  : status.kind === "ok"
+                    ? "text-ink"
+                    : "text-subtle"
+              }`}
+            >
+              {status.kind === "loading" && c.status_loading}
+              {status.kind === "ready" && c.status_ready}
+              {(status.kind === "ok" || status.kind === "error") && status.msg}
+            </p>
+          </section>
+        </FadeIn>
+
+        {result && midiUrl && (
+          <FadeIn>
+            <section className="mt-12 rounded-lg border border-border bg-surface/80 p-6 backdrop-blur-sm md:p-8">
+              <h2 className="font-serif text-2xl font-semibold tracking-tight text-ink">
+                {c.player_heading}
+              </h2>
+
+              <div className="mt-5 flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={onPlay}
+                  disabled={playing}
+                  className="rounded-md bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {c.play}
+                </button>
+                <button
+                  type="button"
+                  onClick={onStop}
+                  disabled={!playing}
+                  className="rounded-md border border-border bg-elevated px-4 py-2 text-sm font-semibold text-ink transition hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {c.stop}
+                </button>
+                <a
+                  href={midiUrl}
+                  download={downloadName}
+                  className="rounded-md border border-border bg-elevated px-4 py-2 text-sm font-semibold text-ink transition hover:border-accent hover:text-accent"
+                >
+                  {c.download}
+                </a>
+              </div>
+
+              <Stats result={result} bpm={bpm} c={c} />
+
+              <h3 className="mt-8 text-xs font-semibold uppercase tracking-[0.2em] text-muted">
+                {c.sample_heading}
+              </h3>
+              <pre className="mt-3 overflow-x-auto rounded-md border border-border bg-elevated p-4 font-mono text-xs leading-6 text-ink">
+                {buildSampleText(result)}
+              </pre>
+            </section>
+          </FadeIn>
+        )}
+
+        <FadeIn>
+          <section className="mt-20">
+            <h2 className="font-serif text-2xl font-semibold tracking-tight text-ink">
+              {c.algo_heading}
+            </h2>
+            <div className="mt-6 max-w-prose space-y-4 leading-relaxed text-muted">
+              {c.algo_paragraphs.map((p, i) => (
+                <p key={i}>{p}</p>
+              ))}
+              <p>
+                <a
+                  href={c.algo_link_href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-accent underline-offset-4 hover:underline"
+                >
+                  {c.algo_link_label} →
+                </a>
+              </p>
+            </div>
+          </section>
+        </FadeIn>
+      </div>
+    </>
+  );
+}
+
+function Stats({
+  result,
+  bpm,
+  c,
+}: {
+  result: ProcessResult;
+  bpm: number;
+  c: (typeof PLAYER)[Lang];
+}) {
+  const dur = estimateDuration(result.sDurs, result.bDurs, bpm);
+  const { ab } = countDissonances(result);
+  const semiA = countAltoSemitones(result);
+  const items = [
+    { val: result.tetras.length, lbl: c.stat_tetras },
+    { val: dur, lbl: c.stat_duration },
+    { val: `${result.seq.length} bp`, lbl: c.stat_bases },
+    { val: `${ab}/${result.tetras.length}`, lbl: c.stat_ab_diss },
+    { val: semiA, lbl: c.stat_alto_semi },
+  ];
+  return (
+    <dl className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
+      {items.map((s, i) => (
+        <div
+          key={i}
+          className="rounded-md border border-border bg-elevated p-3 text-center"
+        >
+          <dt className="text-[0.65rem] font-semibold uppercase tracking-[0.15em] text-subtle">
+            {s.lbl}
+          </dt>
+          <dd className="mt-1 font-serif text-xl font-semibold text-ink">
+            {s.val}
+          </dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+function buildSampleText(result: ProcessResult): string {
+  const n = Math.min(8, result.tetras.length);
+  const pad = (s: string, w: number) => s.padEnd(w);
+  const lines = [`${pad("Tetra", 7)}${pad("S", 6)}${pad("A", 6)}${pad("T", 6)}B`];
+  for (let i = 0; i < n; i++) {
+    lines.push(
+      pad(result.tetras[i], 7) +
+        pad(midiName(result.sNotes[i]), 6) +
+        pad(midiName(result.aNotes[i]), 6) +
+        pad(midiName(result.tNotes[i]), 6) +
+        midiName(result.bNotes[i]),
+    );
+  }
+  return lines.join("\n");
+}
