@@ -1,33 +1,40 @@
 import type { Lang } from "@/lib/i18n";
 
-// Short labels for the scale toggles (must fit on a switch face).
-// Universal — same in both languages.
+// Compact labels shown directly under each key toggle.
+// Universal — same in both languages (use English "Minor/Major" idiom
+// since these are music-theory standards regardless of UI language).
 export const SCALE_ABBREV: Record<string, string> = {
-  d_minor: "Dm",
-  g_minor: "Gm",
-  c_minor: "Cm",
-  a_minor: "Am",
-  e_minor: "Em",
-  d_major: "D",
-  a_major: "A",
-  d_phrygian: "Dφ",
-  d_min_pent: "Pm",
-  d_maj_pent: "PM",
+  d_minor: "D Minor",
+  g_minor: "G Minor",
+  c_minor: "C Minor",
+  a_minor: "A Minor",
+  e_minor: "E Minor",
+  d_major: "D Major",
+  a_major: "A Major",
+  d_phrygian: "D Phryg.",
+  d_min_pent: "D m. pent",
+  d_maj_pent: "D M. pent",
 };
 
 export const PLAYER: Record<Lang, {
   back: string;
-  eyebrow: string;
+  eyebrow: (aprox: number) => string;
   title: string;
   lede: string;
   console_heading: string;
-  console_subtitle: string;
+  console_subtitle: (aprox: number) => string;
   seq_label: string;
   seq_placeholder: string;
   seq_hint: (count: number, max: number) => string;
   scale_label: string;
   scale_active: string;
   scales: Record<string, string>;
+  aprox_label: string;
+  aprox_active: string;
+  aprox_descriptions: Record<5 | 6 | 7, string>;
+  mix_label: string;
+  mix_voice: { s: string; a: string; t: string; b: string };
+  mix_voice_origin: { s: string; a: string; t: string; b: string };
   bpm_label: string;
   bpm_unit: string;
   generate: string;
@@ -38,6 +45,7 @@ export const PLAYER: Record<Lang, {
   status_done: (n: number, dur: string, bpm: number) => string;
   player_heading: string;
   play: string;
+  rewind: string;
   stop: string;
   download: string;
   stat_tetras: string;
@@ -53,12 +61,12 @@ export const PLAYER: Record<Lang, {
 }> = {
   en: {
     back: "← Lab website",
-    eyebrow: "DNA → Music · aprox7",
+    eyebrow: (aprox) => `DNA → Music · aprox${aprox}`,
     title: "Sonify a DNA sequence",
     lede:
-      "Each tetranucleotide is mapped to a four-voice chord (SATB). Soprano and Bass come from the major and minor groove dynamics; Alto and Tenor are generated to maximise harmonic consonance — with one-step lookahead so transitions sound smooth.",
+      "Each tetranucleotide is mapped to a four-voice chord (SATB). Soprano and Bass come from the major and minor groove dynamics; Alto and Tenor are generated to maximise harmonic consonance.",
     console_heading: "DNA → Music · console",
-    console_subtitle: "aprox7",
+    console_subtitle: (aprox) => `aprox${aprox}`,
     seq_label: "Sequence",
     seq_placeholder:
       "Paste your sequence here (A, T, C, G) — max. 200 bases\nExample: GCAACGTGCTATGGAAGCGCAATAAGTACC",
@@ -78,6 +86,21 @@ export const PLAYER: Record<Lang, {
       d_min_pent: "D minor pentatonic",
       d_maj_pent: "D major pentatonic",
     },
+    aprox_label: "Algorithm",
+    aprox_active: "Active",
+    aprox_descriptions: {
+      5: "Linear duration · greedy harmonic cost · post-hoc S–A parallel fix",
+      6: "Logarithmic duration · greedy harmonic cost · post-hoc S–A parallel fix",
+      7: "Logarithmic duration · lookahead-aware cost (penalises semitones, tritones, parallels)",
+    },
+    mix_label: "Volume Mix",
+    mix_voice: { s: "Soprano", a: "Alto", t: "Tenor", b: "Bass" },
+    mix_voice_origin: {
+      s: "Major groove",
+      a: "Fix",
+      t: "Fix",
+      b: "Minor groove",
+    },
     bpm_label: "Tempo",
     bpm_unit: "BPM",
     generate: "Generate music",
@@ -89,6 +112,7 @@ export const PLAYER: Record<Lang, {
       `Generated ${n} notes · ${dur} at ${bpm} BPM`,
     player_heading: "Result",
     play: "▶ Play",
+    rewind: "⏮ Restart",
     stop: "■ Stop",
     download: "⬇ Download MIDI",
     stat_tetras: "Tetranucleotides",
@@ -108,12 +132,12 @@ export const PLAYER: Record<Lang, {
   },
   es: {
     back: "← Web del laboratorio",
-    eyebrow: "ADN → Música · aprox7",
+    eyebrow: (aprox) => `ADN → Música · aprox${aprox}`,
     title: "Sonifica una secuencia de ADN",
     lede:
-      "Cada tetranucleótido se asigna a un acorde a cuatro voces (SATB). Soprano y Bajo provienen de la dinámica de los surcos mayor y menor; Alto y Tenor se generan para maximizar la consonancia armónica — con anticipación de un paso para que las transiciones suenen suaves.",
+      "Cada tetranucleótido se asigna a un acorde a cuatro voces (SATB). Soprano y Bajo provienen de la dinámica de los surcos mayor y menor; Alto y Tenor se generan para maximizar la consonancia armónica.",
     console_heading: "ADN → Música · consola",
-    console_subtitle: "aprox7",
+    console_subtitle: (aprox) => `aprox${aprox}`,
     seq_label: "Secuencia",
     seq_placeholder:
       "Pega tu secuencia aquí (A, T, C, G) — máx. 200 bases\nEjemplo: GCAACGTGCTATGGAAGCGCAATAAGTACC",
@@ -133,6 +157,21 @@ export const PLAYER: Record<Lang, {
       d_min_pent: "Pentatónica menor de Re",
       d_maj_pent: "Pentatónica mayor de Re",
     },
+    aprox_label: "Algoritmo",
+    aprox_active: "Activo",
+    aprox_descriptions: {
+      5: "Duración lineal · coste armónico voraz · corrección posterior de paralelismos S–A",
+      6: "Duración logarítmica · coste armónico voraz · corrección posterior de paralelismos S–A",
+      7: "Duración logarítmica · coste con anticipación (penaliza semitonos, tritonos, paralelos)",
+    },
+    mix_label: "Mezcla de volumen",
+    mix_voice: { s: "Soprano", a: "Alto", t: "Tenor", b: "Bajo" },
+    mix_voice_origin: {
+      s: "Surco mayor",
+      a: "Fix",
+      t: "Fix",
+      b: "Surco menor",
+    },
     bpm_label: "Tempo",
     bpm_unit: "BPM",
     generate: "Generar música",
@@ -144,6 +183,7 @@ export const PLAYER: Record<Lang, {
       `Generadas ${n} notas · ${dur} a ${bpm} BPM`,
     player_heading: "Resultado",
     play: "▶ Reproducir",
+    rewind: "⏮ Reiniciar",
     stop: "■ Detener",
     download: "⬇ Descargar MIDI",
     stat_tetras: "Tetranucleótidos",

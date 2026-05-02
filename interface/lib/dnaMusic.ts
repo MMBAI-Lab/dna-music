@@ -1,10 +1,19 @@
 /**
- * DNA → Music engine — TypeScript port of generar_midi_aprox7.pl.
- * Lookahead-aware harmonic voicing for SATB:
- *   Soprano + Bass come from major / minor groove dynamics data.
- *   Alto + Tenor are generated to maximise consonance with the Bass
- *   (current and next), penalising semitones, tritones, parallels, and
- *   excessive movement away from the voice register centre.
+ * DNA → Music engine — TypeScript port of generar_midi_aprox5p2.pl,
+ * generar_midi_aprox6.pl and generar_midi_aprox7.pl.
+ *
+ * Three modes, selectable via aproxLevel:
+ *   5  Linear duration normalisation. Greedy harmonic cost
+ *      (motion + 15·dissonance + 5·spacing). R8 post-hoc fix for
+ *      Soprano–Alto parallels.
+ *   6  Logarithmic duration normalisation; same greedy cost as 5.
+ *   7  Logarithmic duration. Lookahead-aware cost (penalises semitones,
+ *      tritones, parallels, parallel direction; pulls toward register
+ *      centre). R8 absorbed into the cost.
+ *
+ * In all three modes, Soprano and Bass come from the major / minor
+ * groove dynamics data; Alto and Tenor are generated to maximise
+ * harmonic consonance.
  */
 
 // ============================================================
@@ -27,12 +36,14 @@ export const SCALES = {
 } as const;
 
 export type ScaleKey = keyof typeof SCALES;
+export type AproxLevel = 5 | 6 | 7;
+export const APROX_LEVELS: AproxLevel[] = [5, 6, 7];
 
 // Voice registers: [lo, hi, center] in MIDI numbers
-const S_REG: [number, number, number] = [62, 86, 69]; // Soprano D4–D6, center A4
-const A_REG: [number, number, number] = [55, 72, 62]; // Alto    G3–C5, center D4
-const T_REG: [number, number, number] = [48, 67, 57]; // Tenor   C3–G4, center A3
-const B_REG: [number, number, number] = [38, 62, 50]; // Bass    D2–D4, center D3
+const S_REG: [number, number, number] = [62, 86, 69];
+const A_REG: [number, number, number] = [55, 72, 62];
+const T_REG: [number, number, number] = [48, 67, 57];
+const B_REG: [number, number, number] = [38, 62, 50];
 
 // Consonances (interval mod 12): P1, m3, M3, P5, m6, M6
 const CONSONANT = new Set([0, 3, 4, 7, 8, 9]);
@@ -40,8 +51,20 @@ const CONSONANT = new Set([0, 3, 4, 7, 8, 9]);
 // ============================================================
 // TYPES
 // ============================================================
-export type TableRow = { mg_midi: number; mg_ticks: number; mn_midi: number; mn_ticks: number };
+export type TableRow = {
+  mg_midi: number;
+  mg_ticks_lin: number;
+  mg_ticks_log: number;
+  mn_midi: number;
+  mn_ticks_lin: number;
+  mn_ticks_log: number;
+};
 export type Tables = Record<string, TableRow>;
+
+/** Per-voice volume in 0–100. 0 mutes the voice (skipped from playback and MIDI). */
+export type VoiceMix = { s: number; a: number; t: number; b: number };
+
+export const DEFAULT_MIX: VoiceMix = { s: 100, a: 100, t: 100, b: 100 };
 
 export interface ProcessResult {
   tetras: string[];
@@ -53,10 +76,11 @@ export interface ProcessResult {
   bDurs: number[];
   seq: string;
   chroma: readonly number[];
+  aproxLevel: AproxLevel;
 }
 
 // ============================================================
-// CORE ALGORITHM — mirrors generar_midi_aprox7.pl
+// SHARED HELPERS
 // ============================================================
 function snapToScale(midi: number, chroma: readonly number[]): number {
   const pc = midi % 12;
@@ -152,8 +176,56 @@ function checkParallelSB(
   return s;
 }
 
-// Alto cost function — see aprox7/README.md for the full weight table.
-function generateAlto(
+// R8 (aprox5/6 only): move alto down one scale degree if S–A parallel.
+// Walk up the scale until we find the slot above the current alto, then
+// step down — mirrors the Perl loop that finds A_SCALE[i] == a and
+// returns A_SCALE[i-1] (provided it stays below soprano).
+function checkParallelSA(
+  sPrev: number | null,
+  aPrev: number | null,
+  s: number,
+  a: number,
+  aScale: number[],
+): number {
+  if (sPrev == null || aPrev == null) return a;
+  const pi = (sPrev - aPrev + 144) % 12;
+  const ci = (s - a + 144) % 12;
+  if ((pi === 7 && ci === 7) || (pi === 0 && ci === 0)) {
+    for (let i = 1; i < aScale.length; i++) {
+      if (aScale[i] === a && aScale[i - 1] < s) return aScale[i - 1];
+    }
+  }
+  return a;
+}
+
+// ============================================================
+// COST VARIANTS — Alto
+// ============================================================
+
+// aprox5 / aprox6: greedy, no lookahead
+function generateAltoSimple(
+  s: number,
+  b: number,
+  prevA: number,
+  aScale: number[],
+): number {
+  let best: number | null = null;
+  let bestScore = Infinity;
+  for (const c of aScale) {
+    if (c >= s) continue;
+    let score = Math.abs(c - prevA);
+    if (!isConsonant(c, b)) score += 15;
+    if (s - c < 3) score += 5;
+    if (score < bestScore) {
+      bestScore = score;
+      best = c;
+    }
+  }
+  return best ?? 62;
+}
+
+// aprox7: lookahead-aware with R8 absorbed
+function generateAltoLookahead(
   s: number,
   b: number,
   prevA: number,
@@ -186,9 +258,38 @@ function generateAlto(
   return best ?? prevA;
 }
 
-// Tenor cost — same as Alto plus parallel B–T penalty, with hard
-// constraint B < T < A and a fallback if voice crossing is unavoidable.
-function generateTenor(
+// ============================================================
+// COST VARIANTS — Tenor
+// ============================================================
+
+function generateTenorSimple(
+  b: number,
+  a: number,
+  prevT: number,
+  tScale: number[],
+): number {
+  let best: number | null = null;
+  let bestScore = Infinity;
+  for (const c of tScale) {
+    if (c >= a || c <= b) continue;
+    let score = Math.abs(c - prevT);
+    if (!isConsonant(c, b)) score += 15;
+    if (score < bestScore) {
+      bestScore = score;
+      best = c;
+    }
+  }
+  if (best == null) {
+    const mid = Math.floor((a + b) / 2);
+    best = tScale.reduce(
+      (acc, n) => (Math.abs(n - mid) < Math.abs(acc - mid) ? n : acc),
+      tScale[0],
+    );
+  }
+  return best;
+}
+
+function generateTenorLookahead(
   s: number,
   b: number,
   a: number,
@@ -236,6 +337,7 @@ function generateTenor(
 export function processSequence(
   rawSeq: string,
   scaleKey: ScaleKey,
+  aproxLevel: AproxLevel,
   tables: Tables,
 ): ProcessResult {
   const chroma = SCALES[scaleKey];
@@ -250,6 +352,9 @@ export function processSequence(
     throw new Error("Sequence too short (need at least 4 bases).");
   }
 
+  // aprox5 uses linear ticks; aprox6/7 use logarithmic
+  const useLinearTicks = aproxLevel === 5;
+
   const sRaw: number[] = [];
   const bRaw: number[] = [];
   const sDurs: number[] = [];
@@ -259,12 +364,13 @@ export function processSequence(
     if (!row) throw new Error(`Unknown tetranucleotide: ${t}`);
     sRaw.push(forceRegister(snapToScale(row.mg_midi, chroma), S_REG[2], S_REG[0], S_REG[1]));
     bRaw.push(forceRegister(snapToScale(row.mn_midi, chroma), B_REG[2], B_REG[0], B_REG[1]));
-    sDurs.push(row.mg_ticks);
-    bDurs.push(row.mn_ticks);
+    sDurs.push(useLinearTicks ? row.mg_ticks_lin : row.mg_ticks_log);
+    bDurs.push(useLinearTicks ? row.mn_ticks_lin : row.mn_ticks_log);
   }
   const sNotes = applyVoiceLeading(sRaw, 7, S_REG[0], S_REG[1]);
   const bNotes = applyVoiceLeading(bRaw, 7, B_REG[0], B_REG[1]);
 
+  // R7: anti-parallel S–B
   for (let i = 1; i < sNotes.length; i++) {
     sNotes[i] = checkParallelSB(sNotes[i - 1], bNotes[i - 1], sNotes[i], bNotes[i], sScale);
   }
@@ -273,21 +379,40 @@ export function processSequence(
   const tNotes: number[] = [];
   let prevA = 62;
   let prevT = 52;
-  for (let i = 0; i < tetras.length; i++) {
-    const s = sNotes[i];
-    const b = bNotes[i];
-    const sPrev = i > 0 ? sNotes[i - 1] : null;
-    const bPrev = i > 0 ? bNotes[i - 1] : null;
-    const bNext = i < tetras.length - 1 ? bNotes[i + 1] : null;
-    const a = generateAlto(s, b, prevA, sPrev, bNext, aScale);
-    const t = generateTenor(s, b, a, prevT, sPrev, bPrev, bNext, tScale);
-    aNotes.push(a);
-    tNotes.push(t);
-    prevA = a;
-    prevT = t;
+
+  if (aproxLevel === 7) {
+    // Lookahead path
+    for (let i = 0; i < tetras.length; i++) {
+      const s = sNotes[i];
+      const b = bNotes[i];
+      const sPrev = i > 0 ? sNotes[i - 1] : null;
+      const bPrev = i > 0 ? bNotes[i - 1] : null;
+      const bNext = i < tetras.length - 1 ? bNotes[i + 1] : null;
+      const a = generateAltoLookahead(s, b, prevA, sPrev, bNext, aScale);
+      const t = generateTenorLookahead(s, b, a, prevT, sPrev, bPrev, bNext, tScale);
+      aNotes.push(a);
+      tNotes.push(t);
+      prevA = a;
+      prevT = t;
+    }
+  } else {
+    // aprox5 / aprox6: greedy + R8 post-hoc
+    for (let i = 0; i < tetras.length; i++) {
+      const s = sNotes[i];
+      const b = bNotes[i];
+      let a = generateAltoSimple(s, b, prevA, aScale);
+      const sPrevR8 = i > 0 ? sNotes[i - 1] : null;
+      const aPrevR8 = i > 0 ? aNotes[i - 1] : null;
+      a = checkParallelSA(sPrevR8, aPrevR8, s, a, aScale);
+      const t = generateTenorSimple(b, a, prevT, tScale);
+      aNotes.push(a);
+      tNotes.push(t);
+      prevA = a;
+      prevT = t;
+    }
   }
 
-  return { tetras, sNotes, aNotes, tNotes, bNotes, sDurs, bDurs, seq, chroma };
+  return { tetras, sNotes, aNotes, tNotes, bNotes, sDurs, bDurs, seq, chroma, aproxLevel };
 }
 
 // ============================================================
@@ -315,6 +440,7 @@ function buildTrack(
   ch: number,
   program: number,
   name: string,
+  velocity: number,
 ): number[] {
   const nb = strBytes(name);
   const bytes: number[] = [
@@ -330,14 +456,20 @@ function buildTrack(
   for (let i = 0; i < notes.length; i++) {
     const m = notes[i];
     const d = durs[i];
-    bytes.push(...vlq(0), 0x90 | ch, m, 85);
+    bytes.push(...vlq(0), 0x90 | ch, m, velocity);
     bytes.push(...vlq(d), 0x80 | ch, m, 0);
   }
   bytes.push(...vlq(0), 0xff, 0x2f, 0x00);
   return bytes;
 }
 
-export function buildMidi(result: ProcessResult, bpm: number): Uint8Array {
+const BASE_VELOCITY = 85;
+
+export function buildMidi(
+  result: ProcessResult,
+  bpm: number,
+  mix: VoiceMix = DEFAULT_MIX,
+): Uint8Array {
   const tempoUs = Math.round(60_000_000 / bpm);
   const tempoTrack: number[] = [
     ...vlq(0),
@@ -357,13 +489,15 @@ export function buildMidi(result: ProcessResult, bpm: number): Uint8Array {
     0x2f,
     0x00,
   ];
-  const tracks = [
-    tempoTrack,
-    buildTrack(result.sNotes, result.sDurs, 0, 0, "Soprano"),
-    buildTrack(result.aNotes, result.sDurs, 1, 0, "Alto"),
-    buildTrack(result.tNotes, result.bDurs, 2, 0, "Tenor"),
-    buildTrack(result.bNotes, result.bDurs, 3, 43, "Bass"),
-  ];
+
+  const vel = (m: number) => Math.max(1, Math.round((BASE_VELOCITY * m) / 100));
+
+  const tracks: number[][] = [tempoTrack];
+  if (mix.s > 0) tracks.push(buildTrack(result.sNotes, result.sDurs, 0, 0, "Soprano", vel(mix.s)));
+  if (mix.a > 0) tracks.push(buildTrack(result.aNotes, result.sDurs, 1, 0, "Alto", vel(mix.a)));
+  if (mix.t > 0) tracks.push(buildTrack(result.tNotes, result.bDurs, 2, 0, "Tenor", vel(mix.t)));
+  if (mix.b > 0) tracks.push(buildTrack(result.bNotes, result.bDurs, 3, 43, "Bass", vel(mix.b)));
+
   const header = [...strBytes("MThd"), ...u32(6), ...u16(1), ...u16(tracks.length), ...u16(PPQ)];
   const bytes = [...header, ...tracks.flatMap((t) => chunk("MTrk", t))];
   return new Uint8Array(bytes);

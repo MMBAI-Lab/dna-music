@@ -5,19 +5,25 @@ import FadeIn from "@/components/FadeIn";
 import SonifBackground from "@/components/SonifBackground";
 import Knob from "@/components/Knob";
 import ToggleSwitch from "@/components/ToggleSwitch";
+import RockerSwitch from "@/components/RockerSwitch";
+import Fader from "@/components/Fader";
 import { asset } from "@/lib/asset";
 import type { Lang } from "@/lib/i18n";
 import { PLAYER, SCALE_ABBREV } from "@/data/content/player";
 import {
+  APROX_LEVELS,
+  DEFAULT_MIX,
   buildMidi,
   countAltoSemitones,
   countDissonances,
   estimateDuration,
   midiName,
   processSequence,
+  type AproxLevel,
   type ProcessResult,
   type ScaleKey,
   type Tables,
+  type VoiceMix,
 } from "@/lib/dnaMusic";
 import { schedulePlayback, startPlayback, stopPlayback } from "@/lib/playback";
 
@@ -36,6 +42,8 @@ export default function PlayerPage({ lang }: { lang: Lang }) {
   const [status, setStatus] = useState<Status>({ kind: "loading" });
   const [seq, setSeq] = useState("");
   const [scaleKey, setScaleKey] = useState<ScaleKey>("d_minor");
+  const [aproxLevel, setAproxLevel] = useState<AproxLevel>(7);
+  const [mix, setMix] = useState<VoiceMix>(DEFAULT_MIX);
   const [bpm, setBpm] = useState(72);
   const [result, setResult] = useState<ProcessResult | null>(null);
   const [midiUrl, setMidiUrl] = useState<string | null>(null);
@@ -98,15 +106,15 @@ export default function PlayerPage({ lang }: { lang: Lang }) {
     try {
       stopPlayback();
       setPlaying(false);
-      const r = processSequence(seq, scaleKey, tables);
-      const bytes = buildMidi(r, bpm);
+      const r = processSequence(seq, scaleKey, aproxLevel, tables);
+      const bytes = buildMidi(r, bpm, mix);
       const blob = new Blob([new Uint8Array(bytes)], { type: "audio/midi" });
       const url = URL.createObjectURL(blob);
       if (lastUrlRef.current) URL.revokeObjectURL(lastUrlRef.current);
       lastUrlRef.current = url;
       setMidiUrl(url);
       setResult(r);
-      schedulePlayback(r, bpm);
+      schedulePlayback(r, bpm, mix, () => setPlaying(false));
       setStatus({
         kind: "ok",
         msg: c.status_done(r.tetras.length, estimateDuration(r.sDurs, r.bDurs, bpm), bpm),
@@ -127,6 +135,14 @@ export default function PlayerPage({ lang }: { lang: Lang }) {
     setPlaying(false);
   }
 
+  async function onRewind() {
+    if (!result) return;
+    stopPlayback();
+    schedulePlayback(result, bpm, mix, () => setPlaying(false));
+    await startPlayback();
+    setPlaying(true);
+  }
+
   return (
     <>
       <SonifBackground />
@@ -144,7 +160,7 @@ export default function PlayerPage({ lang }: { lang: Lang }) {
             {c.title}
           </h1>
           <p className="mt-3 text-sm font-medium uppercase tracking-[0.25em] text-accent">
-            {c.eyebrow}
+            {c.eyebrow(aproxLevel)}
           </p>
         </FadeIn>
 
@@ -162,7 +178,7 @@ export default function PlayerPage({ lang }: { lang: Lang }) {
                 {c.console_heading}
               </h2>
               <span className="font-mono text-[0.6rem] uppercase tracking-[0.4em] text-zinc-500">
-                {c.console_subtitle}
+                {c.console_subtitle(aproxLevel)}
               </span>
             </div>
 
@@ -215,6 +231,79 @@ export default function PlayerPage({ lang }: { lang: Lang }) {
                   <span className="text-zinc-500">{c.scale_active}:</span>{" "}
                   <span className="text-accent">{c.scales[scaleKey]}</span>
                 </p>
+              </div>
+
+              <div className="flex flex-col items-center md:pt-1">
+                <p className="mb-3 text-[0.65rem] font-bold uppercase tracking-[0.3em] text-zinc-300">
+                  {c.mix_label}
+                </p>
+                <div className="flex items-end gap-3 rounded-sm border border-zinc-900 bg-black/40 p-3 shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)]">
+                  <Fader
+                    label={c.mix_voice.s}
+                    subLabel={c.mix_voice_origin.s}
+                    value={mix.s}
+                    onChange={(v) => setMix((m) => ({ ...m, s: v }))}
+                  />
+                  <Fader
+                    label={c.mix_voice.a}
+                    subLabel={c.mix_voice_origin.a}
+                    value={mix.a}
+                    onChange={(v) => setMix((m) => ({ ...m, a: v }))}
+                  />
+                  <Fader
+                    label={c.mix_voice.t}
+                    subLabel={c.mix_voice_origin.t}
+                    value={mix.t}
+                    onChange={(v) => setMix((m) => ({ ...m, t: v }))}
+                  />
+                  <Fader
+                    label={c.mix_voice.b}
+                    subLabel={c.mix_voice_origin.b}
+                    value={mix.b}
+                    onChange={(v) => setMix((m) => ({ ...m, b: v }))}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Algorithm rocker + LCD readout, and Tempo knob */}
+            <div className="mt-8 flex flex-col gap-8 md:flex-row md:items-start md:justify-between md:gap-10">
+              <div className="flex-1">
+                <p
+                  id="aprox-bank-label"
+                  className="text-[0.65rem] font-bold uppercase tracking-[0.3em] text-zinc-300"
+                >
+                  {c.aprox_label}
+                </p>
+                <div className="mt-3 flex items-stretch gap-4 rounded-sm border border-zinc-900 bg-black/40 p-4 shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)]">
+                  <RockerSwitch
+                    value={aproxLevel}
+                    options={APROX_LEVELS}
+                    topLabel="Aprox"
+                    ariaLabel={c.aprox_label}
+                    onChange={setAproxLevel}
+                  />
+                  {/* LCD-style readout */}
+                  <div
+                    className="relative flex flex-1 flex-col justify-center rounded-sm border border-black/80 px-4 py-3"
+                    style={{
+                      background:
+                        "linear-gradient(to bottom, #0b0b0b 0%, #050505 50%, #0b0b0b 100%)",
+                      boxShadow:
+                        "inset 0 2px 4px rgba(0,0,0,0.85), inset 0 -1px 1px rgba(255,255,255,0.04)",
+                    }}
+                  >
+                    <span className="font-mono text-[0.55rem] uppercase tracking-[0.35em] text-zinc-500">
+                      {c.aprox_active}
+                    </span>
+                    <span className="mt-1 font-mono text-2xl font-bold uppercase tracking-[0.18em] text-accent">
+                      aprox{aproxLevel}
+                    </span>
+                    <span className="mt-2 font-mono text-[0.7rem] leading-relaxed text-zinc-300">
+                      {c.aprox_descriptions[aproxLevel]}
+                    </span>
+                  </div>
+                </div>
               </div>
 
               <div className="flex flex-col items-center md:pt-4">
@@ -275,6 +364,13 @@ export default function PlayerPage({ lang }: { lang: Lang }) {
                   className="rounded-md bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {c.play}
+                </button>
+                <button
+                  type="button"
+                  onClick={onRewind}
+                  className="rounded-md border border-border bg-elevated px-4 py-2 text-sm font-semibold text-ink transition hover:border-accent hover:text-accent"
+                >
+                  {c.rewind}
                 </button>
                 <button
                   type="button"
