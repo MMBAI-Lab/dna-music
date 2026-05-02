@@ -29,6 +29,8 @@ export const PLAYER: Record<Lang, {
   scale_label: string;
   scale_active: string;
   scales: Record<string, string>;
+  tonal_label: string;
+  chromatic_label: string;
   aprox_label: string;
   aprox_active: string;
   aprox_descriptions: Record<5 | 6 | 7, string>;
@@ -74,6 +76,8 @@ export const PLAYER: Record<Lang, {
       `Only A, T, C, G letters are used · minimum 4 bases · ${count} / ${max}`,
     scale_label: "Key",
     scale_active: "Active",
+    tonal_label: "Tonal",
+    chromatic_label: "Chromatic (12-tone, no snap)",
     scales: {
       d_minor: "D natural minor",
       g_minor: "G natural minor",
@@ -145,6 +149,8 @@ export const PLAYER: Record<Lang, {
       `Solo se usan las letras A, T, C, G · mínimo 4 bases · ${count} / ${max}`,
     scale_label: "Tonalidad",
     scale_active: "Activa",
+    tonal_label: "Tonal",
+    chromatic_label: "Cromática (12 tonos, sin ajuste)",
     scales: {
       d_minor: "Re menor natural",
       g_minor: "Sol menor natural",

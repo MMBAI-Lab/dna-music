@@ -39,6 +39,11 @@ export type ScaleKey = keyof typeof SCALES;
 export type AproxLevel = 5 | 6 | 7;
 export const APROX_LEVELS: AproxLevel[] = [5, 6, 7];
 
+// Chromatic 12-tone set — bypasses snap-to-scale so the dataset's raw
+// pitches survive verbatim. Inner voices (A, T) are then chosen from the
+// full chromatic in their register, not a 7-note diatonic subset.
+export const CHROMATIC: readonly number[] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+
 // Voice registers: [lo, hi, center] in MIDI numbers
 const S_REG: [number, number, number] = [62, 86, 69];
 const A_REG: [number, number, number] = [55, 72, 62];
@@ -339,8 +344,9 @@ export function processSequence(
   scaleKey: ScaleKey,
   aproxLevel: AproxLevel,
   tables: Tables,
+  tonalMode: boolean = true,
 ): ProcessResult {
-  const chroma = SCALES[scaleKey];
+  const chroma = tonalMode ? SCALES[scaleKey] : CHROMATIC;
   const sScale = scaleNotesInRange(chroma, S_REG[0], S_REG[1]);
   const aScale = scaleNotesInRange(chroma, A_REG[0], A_REG[1]);
   const tScale = scaleNotesInRange(chroma, T_REG[0], T_REG[1]);

@@ -42,6 +42,7 @@ export default function PlayerPage({ lang }: { lang: Lang }) {
   const [status, setStatus] = useState<Status>({ kind: "loading" });
   const [seq, setSeq] = useState("");
   const [scaleKey, setScaleKey] = useState<ScaleKey>("d_minor");
+  const [tonalMode, setTonalMode] = useState(true);
   const [aproxLevel, setAproxLevel] = useState<AproxLevel>(7);
   const [mix, setMix] = useState<VoiceMix>(DEFAULT_MIX);
   const [bpm, setBpm] = useState(72);
@@ -106,7 +107,7 @@ export default function PlayerPage({ lang }: { lang: Lang }) {
     try {
       stopPlayback();
       setPlaying(false);
-      const r = processSequence(seq, scaleKey, aproxLevel, tables);
+      const r = processSequence(seq, scaleKey, aproxLevel, tables, tonalMode);
       const bytes = buildMidi(r, bpm, mix);
       const blob = new Blob([new Uint8Array(bytes)], { type: "audio/midi" });
       const url = URL.createObjectURL(blob);
@@ -206,21 +207,59 @@ export default function PlayerPage({ lang }: { lang: Lang }) {
             {/* Key bank + Tempo knob */}
             <div className="mt-8 flex flex-col gap-8 md:flex-row md:items-start md:justify-between md:gap-10">
               <div className="flex-1">
-                <p
-                  id="key-bank-label"
-                  className="text-[0.65rem] font-bold uppercase tracking-[0.3em] text-zinc-300"
-                >
-                  {c.scale_label}
-                </p>
+                <div className="flex items-center justify-between">
+                  <p
+                    id="key-bank-label"
+                    className="text-[0.65rem] font-bold uppercase tracking-[0.3em] text-zinc-300"
+                  >
+                    {c.scale_label}
+                  </p>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={tonalMode}
+                    onClick={() => setTonalMode((v) => !v)}
+                    className="flex select-none items-center gap-2 rounded px-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                  >
+                    <span
+                      aria-hidden
+                      className="block h-2 w-2 rounded-full transition-shadow"
+                      style={{
+                        background: tonalMode
+                          ? "rgb(var(--accent))"
+                          : "rgba(80,80,80,0.45)",
+                        boxShadow: tonalMode
+                          ? "0 0 8px 1px rgba(var(--accent) / 0.7), inset 0 0 1px rgba(255,255,255,0.5)"
+                          : "inset 0 0 2px rgba(0,0,0,0.6)",
+                      }}
+                    />
+                    <span className="font-mono text-[0.6rem] font-bold uppercase tracking-[0.2em] text-zinc-300">
+                      {c.tonal_label}
+                    </span>
+                    <span
+                      className="font-mono text-[0.55rem] font-bold uppercase tracking-[0.2em] tabular-nums"
+                      style={{
+                        color: tonalMode
+                          ? "rgb(var(--accent))"
+                          : "rgba(170,170,170,0.55)",
+                      }}
+                    >
+                      {tonalMode ? "ON" : "OFF"}
+                    </span>
+                  </button>
+                </div>
                 <div
                   role="radiogroup"
                   aria-labelledby="key-bank-label"
-                  className="mt-3 grid grid-cols-5 gap-x-2 gap-y-3 rounded-sm border border-zinc-900 bg-black/40 p-3 shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)] sm:gap-x-3"
+                  aria-disabled={!tonalMode}
+                  className={`mt-3 grid grid-cols-5 gap-x-2 gap-y-3 rounded-sm border border-zinc-900 bg-black/40 p-3 shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)] sm:gap-x-3 ${
+                    tonalMode ? "" : "pointer-events-none opacity-40"
+                  }`}
                 >
                   {(Object.keys(SCALE_ABBREV) as ScaleKey[]).map((k) => (
                     <ToggleSwitch
                       key={k}
-                      checked={scaleKey === k}
+                      checked={tonalMode && scaleKey === k}
                       label={SCALE_ABBREV[k]}
                       fullName={c.scales[k]}
                       onSelect={() => setScaleKey(k)}
@@ -229,7 +268,9 @@ export default function PlayerPage({ lang }: { lang: Lang }) {
                 </div>
                 <p className="mt-3 font-mono text-[0.7rem] uppercase tracking-widest text-zinc-400">
                   <span className="text-zinc-500">{c.scale_active}:</span>{" "}
-                  <span className="text-accent">{c.scales[scaleKey]}</span>
+                  <span className="text-accent">
+                    {tonalMode ? c.scales[scaleKey] : c.chromatic_label}
+                  </span>
                 </p>
               </div>
 
