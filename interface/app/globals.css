@@ -57,3 +57,104 @@ a {
   background: rgb(var(--accent));
   color: white;
 }
+
+/* ============================================================
+   Marshall-style console panel
+   Always dark regardless of theme — looks like a piece of gear
+   sitting on the page.
+   ============================================================ */
+.console-panel {
+  position: relative;
+  border-radius: 8px;
+  border: 1px solid #2a2a2a;
+  background:
+    linear-gradient(180deg, #1d1d1d 0%, #0e0e0e 100%);
+  box-shadow:
+    0 14px 30px -8px rgba(0, 0, 0, 0.7),
+    0 4px 8px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.6);
+}
+.console-panel::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border-radius: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  pointer-events: none;
+}
+
+/* Decorative "bolts" in the corners of the title strip */
+.console-screws::before,
+.console-screws::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transform: translateY(-50%);
+  background:
+    radial-gradient(circle at 35% 30%, #555 0%, #1a1a1a 70%, #000 100%);
+  box-shadow:
+    inset 0 0 1px rgba(255, 255, 255, 0.2),
+    0 1px 1px rgba(0, 0, 0, 0.6);
+}
+.console-screws::before { left: -4px; }
+.console-screws::after  { right: -4px; }
+
+/* Chunky push-button generate */
+.console-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.85rem 1.6rem;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: rgb(var(--ink));
+  background:
+    linear-gradient(180deg, #2a2a2a 0%, #161616 50%, #1f1f1f 100%);
+  border: 1px solid #050505;
+  border-radius: 4px;
+  box-shadow:
+    0 3px 0 #050505,
+    0 4px 6px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  transition: transform 80ms ease, box-shadow 80ms ease, background 120ms;
+  user-select: none;
+}
+.console-button:hover:not(:disabled) {
+  background:
+    linear-gradient(180deg, #333 0%, #1c1c1c 50%, #252525 100%);
+}
+.console-button:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow:
+    0 1px 0 #050505,
+    0 2px 3px rgba(0, 0, 0, 0.6),
+    inset 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+.console-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.console-button-led {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgb(var(--accent));
+  box-shadow:
+    0 0 6px 1px rgba(var(--accent) / 0.7),
+    inset 0 0 1px rgba(255, 255, 255, 0.5);
+}
+.console-button:disabled .console-button-led {
+  background: rgba(80, 80, 80, 0.5);
+  box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.6);
+}

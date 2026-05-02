@@ -3,9 +3,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import FadeIn from "@/components/FadeIn";
 import SonifBackground from "@/components/SonifBackground";
+import Knob from "@/components/Knob";
+import ToggleSwitch from "@/components/ToggleSwitch";
 import { asset } from "@/lib/asset";
 import type { Lang } from "@/lib/i18n";
-import { PLAYER } from "@/data/content/player";
+import { PLAYER, SCALE_ABBREV } from "@/data/content/player";
 import {
   buildMidi,
   countAltoSemitones,
@@ -13,7 +15,6 @@ import {
   estimateDuration,
   midiName,
   processSequence,
-  SCALES,
   type ProcessResult,
   type ScaleKey,
   type Tables,
@@ -154,92 +155,108 @@ export default function PlayerPage({ lang }: { lang: Lang }) {
         </FadeIn>
 
         <FadeIn>
-          <section className="mt-16 rounded-lg border border-border bg-surface/80 p-6 backdrop-blur-sm md:p-8">
-            <h2 className="font-serif text-2xl font-semibold tracking-tight text-ink">
-              {c.input_heading}
-            </h2>
+          <section className="console-panel mt-16 p-5 md:p-8">
+            {/* Faceplate header — title strip with corner screws */}
+            <div className="console-screws relative flex items-baseline justify-between border-b border-zinc-800 pb-4">
+              <h2 className="font-serif text-base font-semibold uppercase tracking-[0.18em] text-zinc-100 md:text-lg">
+                {c.console_heading}
+              </h2>
+              <span className="font-mono text-[0.6rem] uppercase tracking-[0.4em] text-zinc-500">
+                {c.console_subtitle}
+              </span>
+            </div>
 
-            <label
-              htmlFor="seq"
-              className="mt-6 block text-xs font-semibold uppercase tracking-[0.2em] text-muted"
-            >
-              {c.seq_label}
-            </label>
-            <textarea
-              id="seq"
-              spellCheck={false}
-              value={seq}
-              onChange={(e) => setSeq(e.target.value)}
-              placeholder={c.seq_placeholder}
-              className="mt-2 block h-28 w-full resize-y rounded-md border border-border bg-elevated px-3 py-2 font-mono text-sm tracking-widest text-ink outline-none transition focus:border-accent"
-            />
-            <p className="mt-2 text-xs text-subtle">
-              {c.seq_hint(baseCount, MAX_BASES)}
-            </p>
+            {/* Sequence input */}
+            <div className="mt-6">
+              <label
+                htmlFor="seq"
+                className="block text-[0.65rem] font-bold uppercase tracking-[0.3em] text-zinc-300"
+              >
+                {c.seq_label}
+              </label>
+              <textarea
+                id="seq"
+                spellCheck={false}
+                value={seq}
+                onChange={(e) => setSeq(e.target.value)}
+                placeholder={c.seq_placeholder}
+                className="mt-2 block h-24 w-full resize-y rounded-sm border border-zinc-800 bg-black/70 px-3 py-2 font-mono text-sm tracking-[0.15em] text-zinc-100 shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)] outline-none transition focus:border-accent"
+              />
+              <p className="mt-2 font-mono text-[0.65rem] uppercase tracking-widest text-zinc-500">
+                {c.seq_hint(baseCount, MAX_BASES)}
+              </p>
+            </div>
 
-            <div className="mt-6 grid gap-4 md:grid-cols-[1fr_140px]">
-              <div>
-                <label
-                  htmlFor="scale"
-                  className="block text-xs font-semibold uppercase tracking-[0.2em] text-muted"
+            {/* Key bank + Tempo knob */}
+            <div className="mt-8 flex flex-col gap-8 md:flex-row md:items-start md:justify-between md:gap-10">
+              <div className="flex-1">
+                <p
+                  id="key-bank-label"
+                  className="text-[0.65rem] font-bold uppercase tracking-[0.3em] text-zinc-300"
                 >
                   {c.scale_label}
-                </label>
-                <select
-                  id="scale"
-                  value={scaleKey}
-                  onChange={(e) => setScaleKey(e.target.value as ScaleKey)}
-                  className="mt-2 block w-full rounded-md border border-border bg-elevated px-3 py-2 text-sm text-ink outline-none transition focus:border-accent"
+                </p>
+                <div
+                  role="radiogroup"
+                  aria-labelledby="key-bank-label"
+                  className="mt-3 grid grid-cols-5 gap-x-2 gap-y-3 rounded-sm border border-zinc-900 bg-black/40 p-3 shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)] sm:gap-x-3"
                 >
-                  {(Object.keys(SCALES) as ScaleKey[]).map((k) => (
-                    <option key={k} value={k}>
-                      {c.scales[k]}
-                    </option>
+                  {(Object.keys(SCALE_ABBREV) as ScaleKey[]).map((k) => (
+                    <ToggleSwitch
+                      key={k}
+                      checked={scaleKey === k}
+                      label={SCALE_ABBREV[k]}
+                      fullName={c.scales[k]}
+                      onSelect={() => setScaleKey(k)}
+                    />
                   ))}
-                </select>
+                </div>
+                <p className="mt-3 font-mono text-[0.7rem] uppercase tracking-widest text-zinc-400">
+                  <span className="text-zinc-500">{c.scale_active}:</span>{" "}
+                  <span className="text-accent">{c.scales[scaleKey]}</span>
+                </p>
               </div>
-              <div>
-                <label
-                  htmlFor="bpm"
-                  className="block text-xs font-semibold uppercase tracking-[0.2em] text-muted"
-                >
-                  {c.bpm_label}
-                </label>
-                <input
-                  id="bpm"
-                  type="number"
+
+              <div className="flex flex-col items-center md:pt-4">
+                <Knob
+                  value={bpm}
                   min={30}
                   max={240}
                   step={1}
-                  value={bpm}
-                  onChange={(e) => setBpm(parseInt(e.target.value, 10) || 0)}
-                  className="mt-2 block w-full rounded-md border border-border bg-elevated px-3 py-2 text-sm text-ink outline-none transition focus:border-accent"
+                  size={104}
+                  label={c.bpm_label}
+                  unit={c.bpm_unit}
+                  ariaLabel={c.bpm_label}
+                  onChange={setBpm}
                 />
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={onGenerate}
-              disabled={status.kind === "loading"}
-              className="mt-6 w-full rounded-md bg-accent px-4 py-3 text-sm font-semibold uppercase tracking-[0.1em] text-white transition hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {c.generate}
-            </button>
-
-            <p
-              className={`mt-3 min-h-[1.25rem] text-xs ${
-                status.kind === "error"
-                  ? "text-accent"
-                  : status.kind === "ok"
-                    ? "text-ink"
-                    : "text-subtle"
-              }`}
-            >
-              {status.kind === "loading" && c.status_loading}
-              {status.kind === "ready" && c.status_ready}
-              {(status.kind === "ok" || status.kind === "error") && status.msg}
-            </p>
+            {/* Generate push-button + status readout */}
+            <div className="mt-8 flex flex-col items-stretch gap-3 md:flex-row md:items-center">
+              <button
+                type="button"
+                onClick={onGenerate}
+                disabled={status.kind === "loading"}
+                className="console-button"
+              >
+                <span className="console-button-led" aria-hidden />
+                <span>{c.generate}</span>
+              </button>
+              <p
+                className={`flex-1 rounded-sm border border-zinc-800 bg-black/70 px-3 py-2 font-mono text-[0.7rem] uppercase tracking-widest shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)] ${
+                  status.kind === "error"
+                    ? "text-accent"
+                    : status.kind === "ok"
+                      ? "text-zinc-100"
+                      : "text-zinc-500"
+                }`}
+              >
+                {status.kind === "loading" && c.status_loading}
+                {status.kind === "ready" && c.status_ready}
+                {(status.kind === "ok" || status.kind === "error") && status.msg}
+              </p>
+            </div>
           </section>
         </FadeIn>
 

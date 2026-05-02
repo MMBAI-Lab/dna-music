@@ -1,17 +1,35 @@
 import type { Lang } from "@/lib/i18n";
 
+// Short labels for the scale toggles (must fit on a switch face).
+// Universal — same in both languages.
+export const SCALE_ABBREV: Record<string, string> = {
+  d_minor: "Dm",
+  g_minor: "Gm",
+  c_minor: "Cm",
+  a_minor: "Am",
+  e_minor: "Em",
+  d_major: "D",
+  a_major: "A",
+  d_phrygian: "Dφ",
+  d_min_pent: "Pm",
+  d_maj_pent: "PM",
+};
+
 export const PLAYER: Record<Lang, {
   back: string;
   eyebrow: string;
   title: string;
   lede: string;
-  input_heading: string;
+  console_heading: string;
+  console_subtitle: string;
   seq_label: string;
   seq_placeholder: string;
   seq_hint: (count: number, max: number) => string;
   scale_label: string;
+  scale_active: string;
   scales: Record<string, string>;
   bpm_label: string;
+  bpm_unit: string;
   generate: string;
   generating: string;
   status_loading: string;
@@ -39,13 +57,15 @@ export const PLAYER: Record<Lang, {
     title: "Sonify a DNA sequence",
     lede:
       "Each tetranucleotide is mapped to a four-voice chord (SATB). Soprano and Bass come from the major and minor groove dynamics; Alto and Tenor are generated to maximise harmonic consonance — with one-step lookahead so transitions sound smooth.",
-    input_heading: "Sequence",
-    seq_label: "DNA Sequence",
+    console_heading: "DNA → Music · console",
+    console_subtitle: "aprox7",
+    seq_label: "Sequence",
     seq_placeholder:
       "Paste your sequence here (A, T, C, G) — max. 200 bases\nExample: GCAACGTGCTATGGAAGCGCAATAAGTACC",
     seq_hint: (count, max) =>
       `Only A, T, C, G letters are used · minimum 4 bases · ${count} / ${max}`,
     scale_label: "Key",
+    scale_active: "Active",
     scales: {
       d_minor: "D natural minor",
       g_minor: "G natural minor",
@@ -58,7 +78,8 @@ export const PLAYER: Record<Lang, {
       d_min_pent: "D minor pentatonic",
       d_maj_pent: "D major pentatonic",
     },
-    bpm_label: "Tempo (BPM)",
+    bpm_label: "Tempo",
+    bpm_unit: "BPM",
     generate: "Generate music",
     generating: "Generating…",
     status_loading: "Loading data…",
@@ -91,13 +112,15 @@ export const PLAYER: Record<Lang, {
     title: "Sonifica una secuencia de ADN",
     lede:
       "Cada tetranucleótido se asigna a un acorde a cuatro voces (SATB). Soprano y Bajo provienen de la dinámica de los surcos mayor y menor; Alto y Tenor se generan para maximizar la consonancia armónica — con anticipación de un paso para que las transiciones suenen suaves.",
-    input_heading: "Secuencia",
-    seq_label: "Secuencia de ADN",
+    console_heading: "ADN → Música · consola",
+    console_subtitle: "aprox7",
+    seq_label: "Secuencia",
     seq_placeholder:
       "Pega tu secuencia aquí (A, T, C, G) — máx. 200 bases\nEjemplo: GCAACGTGCTATGGAAGCGCAATAAGTACC",
     seq_hint: (count, max) =>
       `Solo se usan las letras A, T, C, G · mínimo 4 bases · ${count} / ${max}`,
     scale_label: "Tonalidad",
+    scale_active: "Activa",
     scales: {
       d_minor: "Re menor natural",
       g_minor: "Sol menor natural",
@@ -110,7 +133,8 @@ export const PLAYER: Record<Lang, {
       d_min_pent: "Pentatónica menor de Re",
       d_maj_pent: "Pentatónica mayor de Re",
     },
-    bpm_label: "Tempo (BPM)",
+    bpm_label: "Tempo",
+    bpm_unit: "BPM",
     generate: "Generar música",
     generating: "Generando…",
     status_loading: "Cargando datos…",

@@ -41,7 +41,10 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeBootstrap }} />
       </head>
-      <body className="flex min-h-screen flex-col">
+      <body
+        className="flex min-h-screen flex-col"
+        suppressHydrationWarning
+      >
         <Nav />
         <main className="flex-1">{children}</main>
         <Footer />

@@ -249,7 +249,7 @@ my $ly = <<'HEADER';
 \version "2.24.0"
 
 % ============================================================
-% ABC Música Mollá — aprox5/prueba2
+% ABC Música Molla — aprox5/prueba2
 % 4 voces SATB: soprano y bajo desde datos de ADN,
 %               alto y tenor como corrección armónica
 %

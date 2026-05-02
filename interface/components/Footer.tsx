@@ -7,12 +7,12 @@ const STRINGS = {
   en: {
     rights: "DansLab — Molecular Modeling, Bioinformatics & AI",
     affiliation: "Universidad de la República, Uruguay",
-    project: "DNA-music project · Dans / Mollá",
+    project: "DNA-music project · Pablo D. Dans & Nicolás Molla",
   },
   es: {
     rights: "DansLab — Modelado Molecular, Bioinformática e IA",
     affiliation: "Universidad de la República, Uruguay",
-    project: "Proyecto DNA-music · Dans / Mollá",
+    project: "Proyecto DNA-music · Pablo D. Dans y Nicolás Molla",
   },
 } as const;
 
