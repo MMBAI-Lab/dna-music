@@ -33,6 +33,12 @@ export const SCALES = {
   d_phrygian: [0, 1, 3, 5, 7, 8, 10],
   d_min_pent: [0, 2, 5, 7, 9],
   d_maj_pent: [2, 4, 6, 9, 11],
+  // Double harmonic / Byzantine on D: D Eb F# G A Bb C# — two augmented
+  // 2nds give the Arabic / sefardí flavour.
+  d_dbl_harm: [1, 2, 3, 6, 7, 9, 10],
+  // Octatonic W–H on D: D E F G G# A# B C# — 8 notes alternating
+  // whole-half. Built on diminished 7th harmony, jazzy tension.
+  d_octatonic: [1, 2, 4, 5, 7, 8, 10, 11],
 } as const;
 
 export type ScaleKey = keyof typeof SCALES;

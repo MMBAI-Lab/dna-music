@@ -252,7 +252,7 @@ export default function PlayerPage({ lang }: { lang: Lang }) {
                   role="radiogroup"
                   aria-labelledby="key-bank-label"
                   aria-disabled={!tonalMode}
-                  className={`mt-3 grid grid-cols-5 gap-x-2 gap-y-3 rounded-sm border border-zinc-900 bg-black/40 p-3 shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)] sm:gap-x-3 ${
+                  className={`mt-3 grid grid-cols-6 gap-x-2 gap-y-3 rounded-sm border border-zinc-900 bg-black/40 p-3 shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)] sm:gap-x-3 ${
                     tonalMode ? "" : "pointer-events-none opacity-40"
                   }`}
                 >

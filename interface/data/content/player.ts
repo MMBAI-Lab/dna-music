@@ -14,6 +14,8 @@ export const SCALE_ABBREV: Record<string, string> = {
   d_phrygian: "D Phryg.",
   d_min_pent: "D m. pent",
   d_maj_pent: "D M. pent",
+  d_dbl_harm: "D Dbl. h.",
+  d_octatonic: "D Octat.",
 };
 
 export const PLAYER: Record<Lang, {
@@ -89,6 +91,8 @@ export const PLAYER: Record<Lang, {
       d_phrygian: "D Phrygian (flamenco)",
       d_min_pent: "D minor pentatonic",
       d_maj_pent: "D major pentatonic",
+      d_dbl_harm: "D Double harmonic (Byzantine)",
+      d_octatonic: "D Octatonic (W–H, diminished)",
     },
     aprox_label: "Algorithm",
     aprox_active: "Active",
@@ -162,6 +166,8 @@ export const PLAYER: Record<Lang, {
       d_phrygian: "Re frigio (flamenco)",
       d_min_pent: "Pentatónica menor de Re",
       d_maj_pent: "Pentatónica mayor de Re",
+      d_dbl_harm: "Re doble armónica (bizantina)",
+      d_octatonic: "Re octatónica (T–S, disminuida)",
     },
     aprox_label: "Algoritmo",
     aprox_active: "Activo",
