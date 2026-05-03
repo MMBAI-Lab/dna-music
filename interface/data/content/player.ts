@@ -24,7 +24,6 @@ export const PLAYER: Record<Lang, {
   title: string;
   lede: string;
   console_heading: string;
-  console_subtitle: (aprox: number) => string;
   seq_label: string;
   seq_placeholder: string;
   seq_hint: (count: number, max: number) => string;
@@ -34,7 +33,9 @@ export const PLAYER: Record<Lang, {
   tonal_label: string;
   chromatic_label: string;
   aprox_label: string;
+  aprox_select_label: string;
   aprox_active: string;
+  aprox_full: (n: number) => string;
   aprox_descriptions: Record<5 | 6 | 7, string>;
   mix_label: string;
   mix_voice: { s: string; a: string; t: string; b: string };
@@ -65,12 +66,11 @@ export const PLAYER: Record<Lang, {
 }> = {
   en: {
     back: "← Lab website",
-    eyebrow: (aprox) => `DNA → Music · aprox${aprox}`,
+    eyebrow: (aprox) => `DNA → Music · Approximation ${aprox}`,
     title: "Sonify a DNA sequence",
     lede:
       "Each tetranucleotide is mapped to a four-voice chord (SATB). Soprano and Bass come from the major and minor groove dynamics; Alto and Tenor are generated to maximise harmonic consonance.",
     console_heading: "DNA → Music · console",
-    console_subtitle: (aprox) => `aprox${aprox}`,
     seq_label: "Sequence",
     seq_placeholder:
       "Paste your sequence here (A, T, C, G) — max. 200 bases\nExample: GCAACGTGCTATGGAAGCGCAATAAGTACC",
@@ -95,7 +95,9 @@ export const PLAYER: Record<Lang, {
       d_octatonic: "D Octatonic (W–H, diminished)",
     },
     aprox_label: "Algorithm",
+    aprox_select_label: "Select",
     aprox_active: "Active",
+    aprox_full: (n) => `Approximation ${n}`,
     aprox_descriptions: {
       5: "Linear duration · greedy harmonic cost · post-hoc S–A parallel fix",
       6: "Logarithmic duration · greedy harmonic cost · post-hoc S–A parallel fix",
@@ -132,7 +134,8 @@ export const PLAYER: Record<Lang, {
     algo_heading: "How it works",
     algo_paragraphs: [
       "DNA double-helix grooves (major and minor) open and close dynamically. Their mean lifetimes and event rates were measured from molecular dynamics simulations for each unique tetranucleotide and mapped to pitch and duration.",
-      "Soprano follows the major-groove pitch; Bass follows the minor-groove pitch. Alto and Tenor are picked from the active scale to maximise consonance with the Bass, both at the current step and the next (lookahead +1). Semitones, tritones, parallel fifths and octaves are penalised; contrary motion is rewarded.",
+      "Soprano follows the major-groove pitch; Bass follows the minor-groove pitch. Alto and Tenor are picked from the active scale to maximise consonance with the Bass.",
+      "Three algorithm variants are available. Approximation 5 uses linear duration mapping and a greedy harmonic cost (motion + dissonance + spacing) with a post-hoc fix for Soprano–Alto parallels. Approximation 6 keeps the same greedy cost but switches to logarithmic duration mapping, which compresses the dynamic range of note lengths so very short events stay audible. Approximation 7 keeps the logarithmic duration and replaces the greedy cost with a lookahead-aware one — semitones, tritones, parallel fifths and octaves are penalised across consecutive steps, and contrary motion is rewarded.",
       "Soprano + Alto share the major-groove duration; Tenor + Bass share the minor-groove duration — two rhythmically independent duets that overlap.",
     ],
     algo_link_label: "Read the full sonification page",
@@ -140,12 +143,11 @@ export const PLAYER: Record<Lang, {
   },
   es: {
     back: "← Web del laboratorio",
-    eyebrow: (aprox) => `ADN → Música · aprox${aprox}`,
+    eyebrow: (aprox) => `ADN → Música · Aproximación ${aprox}`,
     title: "Sonifica una secuencia de ADN",
     lede:
       "Cada tetranucleótido se asigna a un acorde a cuatro voces (SATB). Soprano y Bajo provienen de la dinámica de los surcos mayor y menor; Alto y Tenor se generan para maximizar la consonancia armónica.",
     console_heading: "ADN → Música · consola",
-    console_subtitle: (aprox) => `aprox${aprox}`,
     seq_label: "Secuencia",
     seq_placeholder:
       "Pega tu secuencia aquí (A, T, C, G) — máx. 200 bases\nEjemplo: GCAACGTGCTATGGAAGCGCAATAAGTACC",
@@ -170,7 +172,9 @@ export const PLAYER: Record<Lang, {
       d_octatonic: "Re octatónica (T–S, disminuida)",
     },
     aprox_label: "Algoritmo",
+    aprox_select_label: "Elegir",
     aprox_active: "Activo",
+    aprox_full: (n) => `Aproximación ${n}`,
     aprox_descriptions: {
       5: "Duración lineal · coste armónico voraz · corrección posterior de paralelismos S–A",
       6: "Duración logarítmica · coste armónico voraz · corrección posterior de paralelismos S–A",
@@ -207,7 +211,8 @@ export const PLAYER: Record<Lang, {
     algo_heading: "Cómo funciona",
     algo_paragraphs: [
       "Los surcos mayor y menor de la doble hélice de ADN se abren y cierran dinámicamente. Sus tiempos de vida medios y frecuencias se midieron en simulaciones de dinámica molecular para cada tetranucleótido único y se trasladaron a tono y duración.",
-      "La Soprano sigue el tono del surco mayor; el Bajo, el del surco menor. Alto y Tenor se eligen dentro de la escala activa maximizando la consonancia con el Bajo, en el paso actual y en el siguiente (lookahead +1). Se penalizan semitonos, tritonos y quintas/octavas paralelas; se premia el movimiento contrario.",
+      "La Soprano sigue el tono del surco mayor; el Bajo, el del surco menor. Alto y Tenor se eligen dentro de la escala activa maximizando la consonancia con el Bajo.",
+      "Hay tres variantes del algoritmo. La Aproximación 5 usa un mapeo lineal de duración y un coste armónico voraz (movimiento + disonancia + espaciado) con corrección posterior de paralelismos Soprano–Alto. La Aproximación 6 mantiene el mismo coste voraz pero cambia a un mapeo logarítmico de duración, que comprime el rango dinámico de los valores rítmicos para que los eventos muy cortos sigan siendo audibles. La Aproximación 7 conserva la duración logarítmica y reemplaza el coste voraz por uno con anticipación: penaliza semitonos, tritonos y quintas/octavas paralelas a través de pasos consecutivos, y premia el movimiento contrario.",
       "Soprano + Alto comparten la duración del surco mayor; Tenor + Bajo comparten la del surco menor — dos dúos rítmicamente independientes que se superponen.",
     ],
     algo_link_label: "Más información en la página del laboratorio",

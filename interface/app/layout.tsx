@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     template: "%s · DNA → Music",
   },
   description:
-    "Interactive sonification of DNA tetranucleotide dynamics. Built on the aprox7 algorithm of the ABC Musica Molla project (DansLab, Universidad de la República).",
+    "Interactive sonification of DNA tetranucleotide dynamics. Built on the Approximation 7 algorithm of the ABC Musica Molla project (DansLab, Universidad de la República).",
   openGraph: {
     title: "DNA → Music · DansLab",
     description:

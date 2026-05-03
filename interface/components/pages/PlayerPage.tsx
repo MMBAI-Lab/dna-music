@@ -174,13 +174,10 @@ export default function PlayerPage({ lang }: { lang: Lang }) {
         <FadeIn>
           <section className="console-panel mt-16 p-5 md:p-8">
             {/* Faceplate header — title strip with corner screws */}
-            <div className="console-screws relative flex items-baseline justify-between border-b border-zinc-800 pb-4">
+            <div className="console-screws relative flex items-baseline border-b border-zinc-800 pb-4">
               <h2 className="font-serif text-base font-semibold uppercase tracking-[0.18em] text-zinc-100 md:text-lg">
                 {c.console_heading}
               </h2>
-              <span className="font-mono text-[0.6rem] uppercase tracking-[0.4em] text-zinc-500">
-                {c.console_subtitle(aproxLevel)}
-              </span>
             </div>
 
             {/* Sequence input */}
@@ -320,7 +317,7 @@ export default function PlayerPage({ lang }: { lang: Lang }) {
                   <RockerSwitch
                     value={aproxLevel}
                     options={APROX_LEVELS}
-                    topLabel="Aprox"
+                    topLabel={c.aprox_select_label}
                     ariaLabel={c.aprox_label}
                     onChange={setAproxLevel}
                   />
@@ -337,8 +334,8 @@ export default function PlayerPage({ lang }: { lang: Lang }) {
                     <span className="font-mono text-[0.55rem] uppercase tracking-[0.35em] text-zinc-500">
                       {c.aprox_active}
                     </span>
-                    <span className="mt-1 font-mono text-2xl font-bold uppercase tracking-[0.18em] text-accent">
-                      aprox{aproxLevel}
+                    <span className="mt-1 font-mono text-2xl font-bold uppercase tracking-[0.12em] text-accent">
+                      {c.aprox_full(aproxLevel)}
                     </span>
                     <span className="mt-2 font-mono text-[0.7rem] leading-relaxed text-zinc-300">
                       {c.aprox_descriptions[aproxLevel]}
