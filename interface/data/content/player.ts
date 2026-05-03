@@ -20,7 +20,7 @@ export const SCALE_ABBREV: Record<string, string> = {
 
 export const PLAYER: Record<Lang, {
   back: string;
-  eyebrow: (aprox: number) => string;
+  eyebrow: string;
   title: string;
   lede: string;
   console_heading: string;
@@ -66,7 +66,7 @@ export const PLAYER: Record<Lang, {
 }> = {
   en: {
     back: "← Lab website",
-    eyebrow: (aprox) => `DNA → Music · Approximation ${aprox}`,
+    eyebrow: "DNA → Music · Approximation 5 to 7",
     title: "Sonify a DNA sequence",
     lede:
       "Each tetranucleotide is mapped to a four-voice chord (SATB). Soprano and Bass come from the major and minor groove dynamics; Alto and Tenor are generated to maximise harmonic consonance.",
@@ -143,7 +143,7 @@ export const PLAYER: Record<Lang, {
   },
   es: {
     back: "← Web del laboratorio",
-    eyebrow: (aprox) => `ADN → Música · Aproximación ${aprox}`,
+    eyebrow: "ADN → Música · Aproximación 5 a 7",
     title: "Sonifica una secuencia de ADN",
     lede:
       "Cada tetranucleótido se asigna a un acorde a cuatro voces (SATB). Soprano y Bajo provienen de la dinámica de los surcos mayor y menor; Alto y Tenor se generan para maximizar la consonancia armónica.",

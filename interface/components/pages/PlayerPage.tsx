@@ -161,7 +161,7 @@ export default function PlayerPage({ lang }: { lang: Lang }) {
             {c.title}
           </h1>
           <p className="mt-3 text-sm font-medium uppercase tracking-[0.25em] text-accent">
-            {c.eyebrow(aproxLevel)}
+            {c.eyebrow}
           </p>
         </FadeIn>
 
