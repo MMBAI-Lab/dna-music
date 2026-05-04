@@ -2,7 +2,7 @@
 
 Proyecto de sonificación de ADN: mapeo de dinámicas moleculares de los surcos del ADN (major y minor groove) a parámetros musicales.
 
-Los datos provienen de simulaciones de dinámica molecular sobre todos los tetranucleótidos únicos (140, considerando simetría de complemento inverso). Para cada tetranucleótido se dispone de cuatro métricas: entradas, frecuencia de entrada, tiempo de vida media y ocupación.
+Los datos provienen de simulaciones de dinámica molecular sobre todos los tetranucleótidos únicos (136, considerando simetría de complemento inverso). Para cada tetranucleótido se dispone de cuatro métricas: entradas, frecuencia de entrada, tiempo de vida media y ocupación.
 
 La escala musical utilizada es la escala temperada cromática C1–C7 (84 notas).
 
