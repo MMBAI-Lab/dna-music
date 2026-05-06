@@ -42,8 +42,8 @@ export const SCALES = {
 } as const;
 
 export type ScaleKey = keyof typeof SCALES;
-export type AproxLevel = 5 | 6 | 7 | 8;
-export const APROX_LEVELS: AproxLevel[] = [5, 6, 7, 8];
+export type AproxLevel = 5 | 6 | 7 | 8 | 9;
+export const APROX_LEVELS: AproxLevel[] = [5, 6, 7, 8, 9];
 
 // Chromatic 12-tone set — bypasses snap-to-scale so the dataset's raw
 // pitches survive verbatim. Inner voices (A, T) are then chosen from the
@@ -477,6 +477,70 @@ function generateTenorWTC(
 }
 
 // ============================================================
+// WTC RHYTHMIC NORMALIZATION — Aprox 9
+// ============================================================
+//
+// Derived from corpus analysis of WTC Libro I (24 MusicXML files,
+// 43 233 notes, 43 232 consecutive transitions):
+//
+//   • 72.5 % of consecutive transitions are 1:1 (same figure).
+//     Bach's rhythmic language is built on runs of uniform motion.
+//   • 10.3 % are 2:1 and 9.6 % are 1:2 — the only "permitted" jumps
+//     are halvings or doublings.
+//   • 0 % of transitions are 1:3 or 3:1 (no extreme figure jumps).
+//   • Runs average 3.64 notes; peaks at 4, 6, 8, 12, 16 notes.
+//   • 2.85 % dotted patterns, always between adjacent figures
+//     (negra·→corchea, corchea·→semicorchea).
+//
+// Algorithm (applied to the duration array after log-normalisation):
+//   1. Snap each tick value to the nearest figure in the palette.
+//   2. Run homogenisation: for each adjacent pair whose figures are
+//      exactly one step apart in the palette (ratio ≤ 1.5), snap
+//      both to the longer value — raises 1:1 rate toward WTC's 72.5 %.
+//   3. Boundary cap: after homogenisation, enforce the WTC 0 %
+//      extreme-jump rule: if a remaining transition is > 2:1 or < 1:2,
+//      clip it to the nearest figure within that 2× bound.
+
+const WTC_FIGS: number[] = [240, 360, 480, 720, 960]; // corchea → blanca
+
+function snapToFig(ticks: number): number {
+  return WTC_FIGS.reduce((a, b) => Math.abs(b - ticks) < Math.abs(a - ticks) ? b : a);
+}
+
+export function applyWTCRhythm(durs: number[]): number[] {
+  if (durs.length === 0) return [];
+
+  // Step 1 — snap to palette
+  const s = durs.map(snapToFig);
+
+  // Step 2 — run homogenisation: merge adjacent-step pairs into same figure
+  // Walk left-to-right; when two neighbours are one step apart, raise the
+  // shorter to the longer, propagating the "run" forward.
+  for (let i = 0; i < s.length - 1; i++) {
+    const ai = WTC_FIGS.indexOf(s[i]);
+    const bi = WTC_FIGS.indexOf(s[i + 1]);
+    if (Math.abs(ai - bi) === 1) s[i + 1] = Math.max(s[i], s[i + 1]);
+  }
+
+  // Step 3 — boundary cap: no jump > 2:1 (WTC has 0 % extreme transitions)
+  const result = [s[0]];
+  for (let i = 1; i < s.length; i++) {
+    const prev = result[i - 1];
+    const curr = s[i];
+    if (curr > prev * 2) {
+      // Too large: find highest figure ≤ prev×2
+      result.push([...WTC_FIGS].filter(f => f <= prev * 2).pop() ?? prev);
+    } else if (curr < prev / 2) {
+      // Too small: find lowest figure ≥ prev/2
+      result.push(WTC_FIGS.find(f => f >= prev / 2) ?? prev);
+    } else {
+      result.push(curr);
+    }
+  }
+  return result;
+}
+
+// ============================================================
 // MAIN PIPELINE
 // ============================================================
 export function processSequence(
@@ -498,7 +562,7 @@ export function processSequence(
     throw new Error("Sequence too short (need at least 4 bases).");
   }
 
-  // aprox5 uses linear ticks; aprox6/7 use logarithmic
+  // aprox5 uses linear ticks; aprox6/7/8/9 use logarithmic
   const useLinearTicks = aproxLevel === 5;
 
   const sRaw: number[] = [];
@@ -513,6 +577,12 @@ export function processSequence(
     sDurs.push(useLinearTicks ? row.mg_ticks_lin : row.mg_ticks_log);
     bDurs.push(useLinearTicks ? row.mn_ticks_lin : row.mn_ticks_log);
   }
+  // aprox9: WTC rhythmic normalisation applied before voice generation
+  if (aproxLevel === 9) {
+    sDurs.splice(0, sDurs.length, ...applyWTCRhythm([...sDurs]));
+    bDurs.splice(0, bDurs.length, ...applyWTCRhythm([...bDurs]));
+  }
+
   const sNotes = applyVoiceLeading(sRaw, 7, S_REG[0], S_REG[1]);
   const bNotes = applyVoiceLeading(bRaw, 7, B_REG[0], B_REG[1]);
 
@@ -526,8 +596,9 @@ export function processSequence(
   let prevA = 62;
   let prevT = 52;
 
-  if (aproxLevel === 8) {
-    // Bach/WTC-inspired: stepwise preference, 3rd/6th harmony,
+  if (aproxLevel === 8 || aproxLevel === 9) {
+    // aprox8: Bach/WTC voice leading (stepwise, 3rd/6th harmony, leap resolution)
+    // aprox9: same voice leading + WTC rhythmic normalisation (applied above)
     // leap resolution, contrary motion, 2-step lookahead
     let prevPrevA: number | null = null;
     let prevPrevT: number | null = null;

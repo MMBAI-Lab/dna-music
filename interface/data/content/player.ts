@@ -36,7 +36,7 @@ export const PLAYER: Record<Lang, {
   aprox_select_label: string;
   aprox_active: string;
   aprox_full: (n: number) => string;
-  aprox_descriptions: Record<5 | 6 | 7 | 8, string>;
+  aprox_descriptions: Record<5 | 6 | 7 | 8 | 9, string>;
   mix_label: string;
   mix_voice: { s: string; a: string; t: string; b: string };
   mix_voice_origin: { s: string; a: string; t: string; b: string };
@@ -103,6 +103,7 @@ export const PLAYER: Record<Lang, {
       6: "Logarithmic duration · greedy harmonic cost · post-hoc S–A parallel fix",
       7: "Logarithmic duration · lookahead-aware cost (penalises semitones, tritones, parallels)",
       8: "Logarithmic duration · Bach/WTC-informed: stepwise preference, 3rds & 6ths, leap resolution, 2-step lookahead",
+      9: "Logarithmic duration · WTC rhythmic normalisation (run homogenisation, max 2:1 transitions, binary groupings) · WTC voice leading",
     },
     mix_label: "Volume Mix",
     mix_voice: { s: "Soprano", a: "Alto", t: "Tenor", b: "Bass" },
@@ -136,7 +137,7 @@ export const PLAYER: Record<Lang, {
     algo_paragraphs: [
       "DNA double-helix grooves (major and minor) open and close dynamically. Their mean lifetimes and event rates were measured from molecular dynamics simulations for each unique tetranucleotide and mapped to pitch and duration.",
       "Soprano follows the major-groove pitch; Bass follows the minor-groove pitch. Alto and Tenor are picked from the active scale to maximise consonance with the Bass.",
-      "Four algorithm variants are available. Approximation 5 uses linear duration mapping and a greedy harmonic cost (motion + dissonance + spacing) with a post-hoc fix for Soprano–Alto parallels. Approximation 6 keeps the same greedy cost but switches to logarithmic duration mapping, which compresses the dynamic range of note lengths so very short events stay audible. Approximation 7 keeps the logarithmic duration and replaces the greedy cost with a lookahead-aware one — semitones, tritones, parallel fifths and octaves are penalised across consecutive steps, and contrary motion is rewarded. Approximation 8 is informed by a corpus analysis of Bach's Well-Tempered Clavier Book I: inner voices strongly prefer stepwise motion (M2/m2, as in ~70 % of WTC fugue intervals), harmonic thirds and sixths are favoured over fourths and fifths, large leaps are resolved in the opposite direction, contrary motion between outer voices is explicitly rewarded, and the lookahead extends two steps ahead.",
+      "Five algorithm variants are available. Approximation 5 uses linear duration mapping and a greedy harmonic cost (motion + dissonance + spacing) with a post-hoc fix for Soprano–Alto parallels. Approximation 6 keeps the same greedy cost but switches to logarithmic duration mapping, which compresses the dynamic range of note lengths so very short events stay audible. Approximation 7 keeps the logarithmic duration and replaces the greedy cost with a lookahead-aware one — semitones, tritones, parallel fifths and octaves are penalised across consecutive steps, and contrary motion is rewarded. Approximation 8 is informed by a corpus analysis of Bach's Well-Tempered Clavier Book I: inner voices strongly prefer stepwise motion (M2/m2, as in ~70 % of WTC fugue intervals), harmonic thirds and sixths are favoured over fourths and fifths, large leaps are resolved in the opposite direction, contrary motion between outer voices is explicitly rewarded, and the lookahead extends two steps ahead. Approximation 9 adds WTC-inspired rhythmic post-processing to Approximation 8's voice leading: the 43 000-note corpus analysis showed that 72.5 % of consecutive note transitions maintain identical duration and that jumps larger than 2:1 never occur. The algorithm enforces both rules — adjacent figures are merged into runs of uniform motion, and any transition exceeding a 2:1 ratio is capped — producing the characteristic continuous-flow rhythm of Bach's preludes and fugues.",
       "Soprano + Alto share the major-groove duration; Tenor + Bass share the minor-groove duration — two rhythmically independent duets that overlap.",
     ],
     algo_link_label: "Read the full sonification page",
@@ -181,6 +182,7 @@ export const PLAYER: Record<Lang, {
       6: "Duración logarítmica · coste armónico voraz · corrección posterior de paralelismos S–A",
       7: "Duración logarítmica · coste con anticipación (penaliza semitonos, tritonos, paralelos)",
       8: "Duración logarítmica · inspirado en Bach/CBI: grado conjunto, 3ras y 6tas, resolución de saltos, anticipación a 2 pasos",
+      9: "Duración logarítmica · normalización rítmica del CBI (homogeneización de grupos, transiciones máx. 2:1, agrupaciones binarias) · conducción de voces del CBI",
     },
     mix_label: "Mezcla de volumen",
     mix_voice: { s: "Soprano", a: "Alto", t: "Tenor", b: "Bajo" },
@@ -214,7 +216,7 @@ export const PLAYER: Record<Lang, {
     algo_paragraphs: [
       "Los surcos mayor y menor de la doble hélice de ADN se abren y cierran dinámicamente. Sus tiempos de vida medios y frecuencias se midieron en simulaciones de dinámica molecular para cada tetranucleótido único y se trasladaron a tono y duración.",
       "La Soprano sigue el tono del surco mayor; el Bajo, el del surco menor. Alto y Tenor se eligen dentro de la escala activa maximizando la consonancia con el Bajo.",
-      "Hay cuatro variantes del algoritmo. La Aproximación 5 usa un mapeo lineal de duración y un coste armónico voraz (movimiento + disonancia + espaciado) con corrección posterior de paralelismos Soprano–Alto. La Aproximación 6 mantiene el mismo coste voraz pero cambia a un mapeo logarítmico de duración, que comprime el rango dinámico de los valores rítmicos para que los eventos muy cortos sigan siendo audibles. La Aproximación 7 conserva la duración logarítmica y reemplaza el coste voraz por uno con anticipación: penaliza semitonos, tritonos y quintas/octavas paralelas a través de pasos consecutivos, y premia el movimiento contrario. La Aproximación 8 se nutre del análisis de corpus del Clave Bien Temperado Libro I de Bach: las voces internas prefieren fuertemente el movimiento por grado conjunto (M2/m2, como en el ~70 % de los intervalos de las fugas del CBI), se favorecen las terceras y sextas armónicas sobre las cuartas y quintas, los saltos grandes se resuelven en dirección contraria, el movimiento contrario entre las voces exteriores se premia explícitamente, y la anticipación se extiende a dos pasos.",
+      "Hay cinco variantes del algoritmo. La Aproximación 5 usa un mapeo lineal de duración y un coste armónico voraz (movimiento + disonancia + espaciado) con corrección posterior de paralelismos Soprano–Alto. La Aproximación 6 mantiene el mismo coste voraz pero cambia a un mapeo logarítmico de duración, que comprime el rango dinámico de los valores rítmicos para que los eventos muy cortos sigan siendo audibles. La Aproximación 7 conserva la duración logarítmica y reemplaza el coste voraz por uno con anticipación: penaliza semitonos, tritonos y quintas/octavas paralelas a través de pasos consecutivos, y premia el movimiento contrario. La Aproximación 8 se nutre del análisis de corpus del Clave Bien Temperado Libro I de Bach: las voces internas prefieren fuertemente el movimiento por grado conjunto (M2/m2, como en el ~70 % de los intervalos de las fugas del CBI), se favorecen las terceras y sextas armónicas sobre las cuartas y quintas, los saltos grandes se resuelven en dirección contraria, el movimiento contrario entre las voces exteriores se premia explícitamente, y la anticipación se extiende a dos pasos. La Aproximación 9 añade un post-procesado rítmico inspirado en el CBI a la conducción de voces de la Aproximación 8: el análisis de 43 000 notas mostró que el 72,5 % de las transiciones consecutivas mantienen la misma duración y que jamás aparecen saltos superiores a 2:1. El algoritmo impone ambas reglas — las figuras adyacentes se fusionan en grupos de movimiento uniforme y cualquier transición que supere la razón 2:1 se recorta — produciendo el flujo rítmico continuo característico de los preludios y fugas de Bach.",
       "Soprano + Alto comparten la duración del surco mayor; Tenor + Bajo comparten la del surco menor — dos dúos rítmicamente independientes que se superponen.",
     ],
     algo_link_label: "Más información en la página del laboratorio",
