@@ -42,8 +42,8 @@ export const SCALES = {
 } as const;
 
 export type ScaleKey = keyof typeof SCALES;
-export type AproxLevel = 5 | 6 | 7 | 8 | 9 | 10;
-export const APROX_LEVELS: AproxLevel[] = [5, 6, 7, 8, 9, 10];
+export type AproxLevel = 5 | 6 | 7 | 8 | 9 | 10 | 11;
+export const APROX_LEVELS: AproxLevel[] = [5, 6, 7, 8, 9, 10, 11];
 
 // Meter: "free" uses the full 5-figure WTC palette; "4/4" restricts to
 // {corchea, negra, blanca} — figures that divide 4/4 measures exactly.
@@ -590,6 +590,194 @@ function generateBassAprox10(
 }
 
 // ============================================================
+// ARCH FIX VOICES — Aprox 11
+// ============================================================
+//
+// A and B are generated as arch melodies (ascending → climax → descending)
+// rather than purely as harmonic fillers.  This gives each inner voice a
+// coherent melodic identity while remaining consonant with the data voices
+// (S = mg, T = mn), producing the "musically homogeneous Bach-like texture"
+// described in the project notes.
+//
+// Allowed melodic intervals (same as WTC corpus interval set):
+//   m2(1) M2(2) m3(3) M3(4) P4(5) P5(7) m6(8) M6(9) P8(12)
+//   — no unison, no tritone, no 7ths.
+//
+// Arch rules (applied to each fix voice independently):
+//   • Climax at ~60 % of the sequence (both A and B coordinated).
+//   • Climax note = 80th-percentile of feasible notes at climaxPos.
+//   • Climax note not repeated after placement.
+//   • 2–4 leaps (intervals > M2) per voice.
+//   • ≤ 2 leaps > P4 (P5/m6/M6/P8) per voice.
+//   • After leap > M3: next interval MUST change direction (step pref.).
+//   • After m3/M3: direction change not required.
+//   • No 2 consecutive same-direction leaps; max 2 consecutive leaps.
+//
+// Scoring combines:
+//   - Interval cost (steps free; larger leaps cost more)
+//   - Phase direction reward (ascending before climax, descending after)
+//   - WTC harmonic cost with T (the lower data voice)
+//   - 2-step lookahead on T
+//   - Contrary-motion bonus (A vs S, B vs T)
+//   - Leap budget management and cooldown
+
+const ARCH11_ALLOWED = new Set([1, 2, 3, 4, 5, 7, 8, 9, 12]);
+
+// Generic arch voice generator for A or B in aprox 11.
+// upperBound[i]: note that voice must stay strictly below at step i.
+// lowerBound[i]: note that voice must stay strictly above at step i (0 for B).
+// refNotes[i]: harmonic reference (T) for WTC cost.
+// prevAbove[i]: melody of the voice above (S for A, T for B) — used for contrary motion.
+function generateArchVoice11(
+  upperBound: number[],
+  lowerBound: number[],
+  refNotes: number[],
+  prevAboveNotes: number[],
+  voiceScale: number[],
+  regCenter: number,
+  initialNote: number,
+): number[] {
+  const N = upperBound.length;
+  if (N === 0) return [];
+
+  const climaxPos = Math.max(2, Math.min(N - 3, Math.round(N * 0.60)));
+
+  // Climax note: 80th-percentile of feasible notes at climaxPos
+  const feasible = voiceScale.filter(
+    n => n > lowerBound[climaxPos] && n < upperBound[climaxPos],
+  );
+  const climaxNote = feasible.length > 0
+    ? feasible[Math.floor(feasible.length * 0.80)]
+    : voiceScale[Math.floor(voiceScale.length * 0.75)];
+
+  const snap = (midi: number) =>
+    voiceScale
+      .filter(n => n > lowerBound[0] && n < upperBound[0])
+      .reduce((a, b) => Math.abs(b - midi) < Math.abs(a - midi) ? b : a, voiceScale[0]);
+
+  const melody: number[] = [snap(initialNote)];
+  let prev = melody[0];
+  let leapCount = 0;
+  let bigLeapCount = 0;
+  let consLeaps = 0;
+  let lastDir = 0;
+  let lastSize = 0;
+  let lastWasLeap = false;
+  let leapCooldown = 0;
+  let climaxPlaced = false;
+
+  const updState = (note: number) => {
+    const iv = Math.abs(note - prev);
+    const dir = Math.sign(note - prev);
+    if (iv > 2) {
+      leapCount++; if (iv > 5) bigLeapCount++;
+      consLeaps++; lastWasLeap = true; leapCooldown = 3;
+    } else {
+      consLeaps = 0; lastWasLeap = false;
+      if (leapCooldown > 0) leapCooldown--;
+    }
+    lastDir = dir; lastSize = iv; prev = note;
+  };
+
+  for (let i = 1; i < N; i++) {
+    // Force climax
+    if (i === climaxPos && !climaxPlaced) {
+      const reach = voiceScale.filter(n => {
+        const iv = Math.abs(n - prev);
+        return ARCH11_ALLOWED.has(iv) && iv > 0
+          && n > lowerBound[i] && n < upperBound[i];
+      });
+      const placed = reach.length > 0
+        ? reach.reduce((a, b) => Math.abs(b - climaxNote) < Math.abs(a - climaxNote) ? b : a)
+        : (feasible[0] ?? prev);
+      melody.push(placed); updState(placed); climaxPlaced = true; continue;
+    }
+
+    const phase = climaxPlaced ? -1 : 1;
+
+    const cands = voiceScale.filter(note => {
+      const iv = Math.abs(note - prev);
+      const dir = Math.sign(note - prev);
+      if (iv === 0 || !ARCH11_ALLOWED.has(iv)) return false;
+      if (note <= lowerBound[i] || note >= upperBound[i]) return false;
+      if (!climaxPlaced && note > climaxNote) return false;
+      if (climaxPlaced  && note >= climaxNote) return false;
+      const isLeap = iv > 2;
+      if (isLeap && leapCount >= 4) return false;
+      if (iv > 5 && bigLeapCount >= 2) return false;
+      if (isLeap && consLeaps >= 2) return false;
+      if (lastWasLeap && lastSize > 4 && dir === lastDir) return false;
+      if (lastWasLeap && isLeap && dir === lastDir) return false;
+      return true;
+    });
+
+    const pool = cands.length > 0 ? cands : voiceScale.filter(note => {
+      const iv = Math.abs(note - prev);
+      if (iv === 0 || !ARCH11_ALLOWED.has(iv)) return false;
+      if (note <= lowerBound[i] || note >= upperBound[i]) return false;
+      if (!climaxPlaced && note > climaxNote) return false;
+      if (climaxPlaced  && note >= climaxNote) return false;
+      return true;
+    });
+    if (pool.length === 0) { melody.push(prev); updState(prev); continue; }
+
+    const ref = refNotes[i];
+    const refN  = i < N - 1 ? refNotes[i + 1] : null;
+    const refN2 = i < N - 2 ? refNotes[i + 2] : null;
+    const abovePrev = i > 0 ? prevAboveNotes[i - 1] : null;
+    const aboveCurr = prevAboveNotes[i];
+
+    const best = pool.reduce((acc, note) => {
+      const iv  = Math.abs(note - prev);
+      const dir = Math.sign(note - prev);
+      const isLeap = iv > 2;
+      let score = 0;
+
+      // Interval cost
+      if (iv <= 2) score += 0;
+      else if (iv <= 4) score += 4;
+      else if (iv === 5) score += 7;
+      else score += 11;
+
+      // Phase direction
+      if (dir === phase) score -= 5;
+      else if (dir === -phase) score += 7;
+
+      // Leap cooldown
+      if (leapCooldown > 0 && isLeap) score += 5;
+
+      // Encourage leaps when under budget
+      if (isLeap && leapCount < 2 && i > Math.floor(N * 0.35)) score -= 4;
+
+      // WTC harmonic cost with T (lower data reference)
+      score += wtcHarmonicCost(note, ref) * 1.5;
+      if (refN  != null) score += wtcHarmonicCost(note, refN);
+      if (refN2 != null) score += wtcHarmonicCost(note, refN2) * 0.5;
+
+      // Contrary motion with voice above (S for A, T for B)
+      if (abovePrev != null) {
+        const aboveDir = Math.sign(aboveCurr - abovePrev);
+        if (aboveDir !== 0 && dir !== 0 && aboveDir !== dir) score -= 4;
+      }
+
+      // Register center pull
+      score += Math.abs(note - regCenter) * 0.07;
+
+      // Ascending arc: pull toward climax
+      if (!climaxPlaced) score += (climaxNote - note) * (i / climaxPos) * 0.06;
+
+      // Prefer ending low
+      if (climaxPlaced && i > N * 0.9) score += note * 0.04;
+
+      return score < acc.score ? { note, score } : acc;
+    }, { note: pool[0], score: Infinity }).note;
+
+    melody.push(best); updState(best);
+  }
+  return melody;
+}
+
+// ============================================================
 // WTC RHYTHMIC NORMALIZATION — Aprox 9
 // ============================================================
 //
@@ -717,7 +905,45 @@ export function processSequence(
   let prevA = 62;
   let prevT = 52;
 
-  if (aproxLevel === 10) {
+  if (aproxLevel === 11) {
+    // Aprox 11: same T/B role swap as aprox 10 (T=mn data, B=fix).
+    // A and B are generated as ARCH melodies following the WTC interval
+    // and leap rules, with WTC harmonic cost and contrary-motion bonus.
+    const tDataRaw = tetras.map(tetra => {
+      const row = tables[tetra]!;
+      return forceRegister(snapToScale(row.mn_midi, chroma), T_REG[2], T_REG[0], T_REG[1]);
+    });
+    const tNotesData = applyVoiceLeading(tDataRaw, 7, T_REG[0], T_REG[1]);
+
+    // Anti-parallel S–T
+    for (let i = 1; i < sNotes.length; i++) {
+      sNotes[i] = checkParallelSB(
+        sNotes[i - 1], tNotesData[i - 1], sNotes[i], tNotesData[i], sScale,
+      );
+    }
+
+    // A: arch, bounded by T (below) and S (above)
+    // Flat lower bound: T notes (T < A < S)
+    const aLower = tNotesData;  // A must be > T at each step
+    const aUpper = sNotes;      // A must be < S at each step
+    const aNotesFull = generateArchVoice11(
+      aUpper, aLower, tNotesData, sNotes, aScale, A_REG[2],
+      aScale.find(n => n > tNotesData[0] && n < sNotes[0]) ?? A_REG[2],
+    );
+
+    // B: arch, bounded by register floor (below) and T (above)
+    const bLower = new Array(tetras.length).fill(B_REG[0] - 1); // constant lower bound
+    const bUpper = tNotesData;  // B must be < T at each step
+    const bNotesFull = generateArchVoice11(
+      bUpper, bLower, tNotesData, tNotesData, bScale, B_REG[2],
+      bScale.filter(n => n < tNotesData[0]).pop() ?? B_REG[2],
+    );
+
+    aNotes.push(...aNotesFull);
+    tNotes.push(...tNotesData);
+    bNotes.splice(0, bNotes.length, ...bNotesFull);
+
+  } else if (aproxLevel === 10) {
     // Aprox 10: T carries mn_midi (minor groove) data; B is the generated fix voice.
     // T is snapped into the T register (C3–G4), B is generated below T.
     const tDataRaw = tetras.map(tetra => {
