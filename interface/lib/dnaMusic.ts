@@ -42,8 +42,8 @@ export const SCALES = {
 } as const;
 
 export type ScaleKey = keyof typeof SCALES;
-export type AproxLevel = 5 | 6 | 7 | 8 | 9 | 10;
-export const APROX_LEVELS: AproxLevel[] = [5, 6, 7, 8, 9, 10];
+export type AproxLevel = 5 | 6 | 7 | 8 | 9 | 10 | 11;
+export const APROX_LEVELS: AproxLevel[] = [5, 6, 7, 8, 9, 10, 11];
 
 // Meter: "free" uses the full 5-figure WTC palette; "4/4" restricts to
 // {corchea, negra, blanca} — figures that divide 4/4 measures exactly.
@@ -590,6 +590,174 @@ function generateBassAprox10(
 }
 
 // ============================================================
+// SOPRANO ARCH MELODY — Aprox 11
+// ============================================================
+//
+// S is generated as a planned arch melody (subida → punto álgido →
+// bajada) instead of being taken directly from mg_midi.  The DNA data
+// still drives pitch SELECTION (rawTargets are used as a guide), and
+// mg_ticks still drives durations.
+//
+// Rules enforced:
+//   • Allowed intervals (semitones): m2(1) M2(2) m3(3) M3(4) P4(5)
+//     P5(7) m6(8) M6(9) P8(12) — no tritone, no 7ths, no unison.
+//   • Arch shape: ascending arc (first note → climax), then
+//     descending arc (climax → last note).
+//   • Climax note placed at ~60 % of the sequence; must not repeat.
+//   • Total leaps (interval > M2): 2–4.
+//   • Leaps > P4 (P5, m6, M6, P8): at most 2.
+//   • After any leap > M3: next interval MUST change direction,
+//     preferably by step.
+//   • After a 3rd (m3/M3): direction change NOT required.
+//   • No 2 consecutive same-direction leaps.
+//   • No more than 2 consecutive leaps.
+
+const APROX11_ALLOWED = new Set([1, 2, 3, 4, 5, 7, 8, 9, 12]);
+
+function generateSopranAprox11(rawTargets: number[], sScale: number[]): number[] {
+  const N = rawTargets.length;
+  if (N === 0) return [];
+  if (N === 1) {
+    return [sScale.reduce((a, b) => Math.abs(b - rawTargets[0]) < Math.abs(a - rawTargets[0]) ? b : a)];
+  }
+
+  // Climax: ~60 % position, ~75th-percentile note of sScale
+  const climaxPos  = Math.max(2, Math.min(N - 3, Math.round(N * 0.60)));
+  const climaxNote = sScale[Math.floor(sScale.length * 0.75)] ?? sScale[sScale.length - 1];
+
+  // Start from first DNA target (snapped to scale)
+  const snap = (midi: number) =>
+    sScale.reduce((a, b) => Math.abs(b - midi) < Math.abs(a - midi) ? b : a);
+
+  const melody: number[] = [snap(rawTargets[0])];
+  let prev         = melody[0];
+  let leapCount    = 0;
+  let bigLeapCount = 0;   // leaps > P4 (> 5 st)
+  let consLeaps    = 0;   // consecutive leaps
+  let lastDir      = 0;   // last interval direction (+1/-1)
+  let lastSize     = 0;   // last interval size (semitones)
+  let lastWasLeap  = false;
+  let leapCooldown = 0;   // prefer steps for N notes after a leap
+  let climaxPlaced = false;
+
+  const updateState = (note: number) => {
+    const iv  = Math.abs(note - prev);
+    const dir = Math.sign(note - prev);
+    if (iv > 2) {
+      leapCount++;
+      if (iv > 5) bigLeapCount++;
+      consLeaps++;
+      lastWasLeap  = true;
+      leapCooldown = 3;
+    } else {
+      consLeaps   = 0;
+      lastWasLeap = false;
+      if (leapCooldown > 0) leapCooldown--;
+    }
+    lastDir  = dir;
+    lastSize = iv;
+    prev     = note;
+  };
+
+  for (let i = 1; i < N; i++) {
+    // ── Force climax at climaxPos ──────────────────────────────
+    if (i === climaxPos && !climaxPlaced) {
+      // Pick the closest reachable note to climaxNote
+      const reachable = sScale.filter(n => {
+        const iv = Math.abs(n - prev);
+        return APROX11_ALLOWED.has(iv) && iv > 0;
+      });
+      const placed = reachable.length > 0
+        ? reachable.reduce((a, b) => Math.abs(b - climaxNote) < Math.abs(a - climaxNote) ? b : a)
+        : snap(climaxNote);
+      melody.push(placed);
+      updateState(placed);
+      climaxPlaced = true;
+      continue;
+    }
+
+    const phase  = climaxPlaced ? -1 : 1;  // +1 = ascending, -1 = descending
+    const target = rawTargets[i];
+
+    // ── Build valid candidates ─────────────────────────────────
+    const cands = sScale.filter(note => {
+      const iv  = Math.abs(note - prev);
+      const dir = Math.sign(note - prev);
+      if (iv === 0 || !APROX11_ALLOWED.has(iv)) return false;
+
+      // Arch: before climax don't exceed climaxNote; after climax stay strictly below
+      if (!climaxPlaced && note > climaxNote) return false;
+      if (climaxPlaced  && note >= climaxNote) return false;
+
+      const isLeap = iv > 2;
+      if (isLeap && leapCount    >= 4) return false;
+      if (iv > 5  && bigLeapCount >= 2) return false;
+      if (isLeap && consLeaps    >= 2) return false;
+
+      // After leap > M3: MUST change direction
+      if (lastWasLeap && lastSize > 4 && dir === lastDir) return false;
+      // No two consecutive same-direction leaps (any size)
+      if (lastWasLeap && isLeap && dir === lastDir) return false;
+
+      return true;
+    });
+
+    // Fallback: relax to any reachable note staying in arch bounds
+    const pool = cands.length > 0 ? cands : sScale.filter(note => {
+      const iv = Math.abs(note - prev);
+      if (iv === 0 || !APROX11_ALLOWED.has(iv)) return false;
+      if (!climaxPlaced && note > climaxNote) return false;
+      if (climaxPlaced  && note >= climaxNote) return false;
+      return true;
+    });
+    if (pool.length === 0) { melody.push(prev); updateState(prev); continue; }
+
+    // ── Score candidates ───────────────────────────────────────
+    const best = pool.reduce((bestSoFar, note) => {
+      const iv  = Math.abs(note - prev);
+      const dir = Math.sign(note - prev);
+      const isLeap = iv > 2;
+      let score = 0;
+
+      // Interval cost: steps free, leaps cost more
+      if (iv <= 2) score += 0;
+      else if (iv <= 4) score += 4;
+      else if (iv === 5) score += 7;
+      else score += 11;
+
+      // Phase direction: reward movement in current arc direction
+      if (dir === phase) score -= 5;
+      else if (dir === -phase) score += 7;
+
+      // After a leap: prefer steps (cooldown)
+      if (leapCooldown > 0 && isLeap) score += 5;
+
+      // Leap budget: if we need at least 2 leaps and haven't hit min, incentivise
+      if (isLeap && leapCount < 2 && i > Math.floor(N * 0.35)) score -= 4;
+
+      // DNA target proximity
+      score += Math.abs(note - target) * 0.12;
+
+      // Ascending arc: pull toward climaxNote
+      if (!climaxPlaced) {
+        const progress = i / climaxPos;
+        score += (climaxNote - note) * progress * 0.08;
+      }
+
+      // Prefer ending low (last 10 % of melody)
+      if (climaxPlaced && i > N * 0.9) score += note * 0.05;
+
+      return score < bestSoFar.score ? { note, score } : bestSoFar;
+    }, { note: pool[0], score: Infinity }).note;
+
+    melody.push(best);
+    updateState(best);
+  }
+
+  return melody;
+}
+
+// ============================================================
 // WTC RHYTHMIC NORMALIZATION — Aprox 9
 // ============================================================
 //
@@ -707,6 +875,12 @@ export function processSequence(
   const sNotes = applyVoiceLeading(sRaw, 7, S_REG[0], S_REG[1]);
   const bNotes = applyVoiceLeading(bRaw, 7, B_REG[0], B_REG[1]);
 
+  // aprox11: replace S with the planned arch melody
+  if (aproxLevel === 11) {
+    const planned = generateSopranAprox11(sRaw, sScale);
+    sNotes.splice(0, sNotes.length, ...planned);
+  }
+
   // R7: anti-parallel S–B
   for (let i = 1; i < sNotes.length; i++) {
     sNotes[i] = checkParallelSB(sNotes[i - 1], bNotes[i - 1], sNotes[i], bNotes[i], sScale);
@@ -758,9 +932,10 @@ export function processSequence(
     // Replace bNotes (currently mn data in B register) with the generated fix voice
     bNotes.splice(0, bNotes.length, ...bNotesFixed);
 
-  } else if (aproxLevel === 8 || aproxLevel === 9) {
-    // aprox8: Bach/WTC voice leading (stepwise, 3rd/6th harmony, leap resolution)
-    // aprox9: same voice leading + WTC rhythmic normalisation (applied above)
+  } else if (aproxLevel === 8 || aproxLevel === 9 || aproxLevel === 11) {
+    // aprox8:  WTC voice leading (stepwise, 3rd/6th, leap resolution)
+    // aprox9:  same + WTC rhythmic normalisation (applied above)
+    // aprox11: same voice leading for A/T/B; S already replaced above
     // leap resolution, contrary motion, 2-step lookahead
     let prevPrevA: number | null = null;
     let prevPrevT: number | null = null;

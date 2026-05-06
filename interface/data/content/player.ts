@@ -39,7 +39,7 @@ export const PLAYER: Record<Lang, {
   meter_44: string;
   aprox_active: string;
   aprox_full: (n: number) => string;
-  aprox_descriptions: Record<5 | 6 | 7 | 8 | 9 | 10, string>;
+  aprox_descriptions: Record<5 | 6 | 7 | 8 | 9 | 10 | 11, string>;
   mix_label: string;
   mix_voice: { s: string; a: string; t: string; b: string };
   mix_voice_origin: { s: string; a: string; t: string; b: string };
@@ -112,6 +112,7 @@ export const PLAYER: Record<Lang, {
       8: "Logarithmic duration · Bach/WTC-informed: stepwise preference, 3rds & 6ths, leap resolution, 2-step lookahead",
       9: "Logarithmic duration · WTC rhythmic normalisation (run homogenisation, max 2:1 transitions, binary groupings) · WTC voice leading",
       10: "Logarithmic duration · WTC voice leading · voice-role swap: T carries minor-groove data, B is the generated fix voice",
+      11: "Logarithmic duration · S is a planned arch melody (climax at ~60 %, 2–4 leaps, direction-change rules, WTC intervals) · WTC voice leading for A, T, B",
     },
     mix_label: "Volume Mix",
     mix_voice: { s: "Soprano", a: "Alto", t: "Tenor", b: "Bass" },
@@ -201,6 +202,7 @@ export const PLAYER: Record<Lang, {
       8: "Duración logarítmica · inspirado en Bach/CBI: grado conjunto, 3ras y 6tas, resolución de saltos, anticipación a 2 pasos",
       9: "Duración logarítmica · normalización rítmica del CBI (homogeneización de grupos, transiciones máx. 2:1, agrupaciones binarias) · conducción de voces del CBI",
       10: "Duración logarítmica · conducción de voces CBI · inversión de roles: T lleva los datos del surco menor, B es la voz generada (fix)",
+      11: "Duración logarítmica · S es una melodía en arco planificada (punto álgido al ~60 %, 2–4 saltos, reglas de cambio de sentido, intervalos del CBI) · conducción de voces CBI para A, T, B",
     },
     mix_label: "Mezcla de volumen",
     mix_voice: { s: "Soprano", a: "Alto", t: "Tenor", b: "Bajo" },
