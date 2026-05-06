@@ -42,8 +42,8 @@ export const SCALES = {
 } as const;
 
 export type ScaleKey = keyof typeof SCALES;
-export type AproxLevel = 5 | 6 | 7;
-export const APROX_LEVELS: AproxLevel[] = [5, 6, 7];
+export type AproxLevel = 5 | 6 | 7 | 8;
+export const APROX_LEVELS: AproxLevel[] = [5, 6, 7, 8];
 
 // Chromatic 12-tone set — bypasses snap-to-scale so the dataset's raw
 // pitches survive verbatim. Inner voices (A, T) are then chosen from the
@@ -343,6 +343,140 @@ function generateTenorLookahead(
 }
 
 // ============================================================
+// COST VARIANTS — Aprox 8 (WTC / Bach-informed)
+// ============================================================
+//
+// Derived from deep-read of the 24 MusicXML files of WTC Book I:
+//   • 70% of melodic intervals in fugas are M2 or m2 (stepwise)
+//   • Characteristic harmonic intervals are m3/M3 and m6/M6 (thirds
+//     and sixths), not P4/P5 which Bach avoids between inner voices
+//   • Leap resolution: large leaps (≥ P4) are typically followed by
+//     a step in the opposite direction
+//   • Contrary motion between outer voices is strongly preferred
+
+// Melodic cost: step-wise movement is free; leaps are increasingly costly
+function wtcMelodicCost(prev: number, curr: number): number {
+  const step = Math.abs(curr - prev);
+  if (step <= 2) return 0;   // M2 / m2  — Bach's 70 % norm, free
+  if (step <= 4) return 4;   // m3 / M3  — occasional leap, mild cost
+  if (step <= 5) return 9;   // P4       — tolerable with good harmony
+  if (step <= 7) return 15;  // P5       — large leap, penalise
+  return 24;                 // M6+      — strongly avoid
+}
+
+// Harmonic cost: Bach's characteristic intervals from WTC analysis.
+// Thirds and sixths dominate simultaneous intervals; P4 is treated
+// as a dissonance between upper voices.
+function wtcHarmonicCost(a: number, b: number): number {
+  const i = Math.abs(a - b) % 12;
+  if (i === 3 || i === 4) return 0;    // m3 / M3  — Bach's first choice
+  if (i === 8 || i === 9) return 1;    // m6 / M6  — second choice
+  if (i === 7) return 4;               // P5       — acceptable
+  if (i === 0) return 5;               // P8 / unison
+  if (i === 5) return 7;               // P4       — dissonant in inner voices
+  if (i === 2 || i === 10) return 11;  // M2 / m7  — dissonant
+  if (i === 1 || i === 11) return 16;  // m2 / M7  — dissonant
+  if (i === 6) return 20;              // tritone  — avoid
+  return 6;
+}
+
+// Penalise two consecutive leaps in the same direction (Bach follows
+// a P4+ leap with a step back, not another leap forward).
+function leapResolutionCost(prevPrev: number | null, prev: number, curr: number): number {
+  if (prevPrev === null) return 0;
+  const l1 = prev - prevPrev;
+  const l2 = curr - prev;
+  if (Math.abs(l1) >= 5 && Math.abs(l2) >= 3 && Math.sign(l1) === Math.sign(l2)) return 10;
+  return 0;
+}
+
+function generateAltoWTC(
+  s: number,
+  b: number,
+  prevA: number,
+  prevPrevA: number | null,
+  sPrev: number | null,
+  bNext: number | null,
+  bNext2: number | null,
+  aScale: number[],
+): number {
+  let best: number | null = null;
+  let bestScore = Infinity;
+  for (const c of aScale) {
+    if (c >= s) continue;
+    let score = wtcMelodicCost(prevA, c);
+    score += wtcHarmonicCost(c, b) * 2;
+    // 2-step lookahead
+    if (bNext != null) score += wtcHarmonicCost(c, bNext);
+    if (bNext2 != null) score += wtcHarmonicCost(c, bNext2) * 0.5;
+    // Leap resolution
+    score += leapResolutionCost(prevPrevA, prevA, c);
+    // Contrary motion with soprano: reward S and A moving in opposite directions
+    if (sPrev != null) {
+      const sDir = Math.sign(s - sPrev);
+      const aDir = Math.sign(c - prevA);
+      if (sDir !== 0 && aDir !== 0 && sDir !== aDir) score -= 5;
+    }
+    // Parallel perfect intervals S–A
+    if (sPrev != null && hasParallel(sPrev, prevA, s, c)) score += 20;
+    // Spacing
+    if (s - c < 3) score += 4;
+    score += Math.abs(c - A_REG[2]) * 0.1;
+    if (score < bestScore) {
+      bestScore = score;
+      best = c;
+    }
+  }
+  return best ?? prevA;
+}
+
+function generateTenorWTC(
+  s: number,
+  b: number,
+  a: number,
+  prevT: number,
+  prevPrevT: number | null,
+  sPrev: number | null,
+  bPrev: number | null,
+  bNext: number | null,
+  bNext2: number | null,
+  tScale: number[],
+): number {
+  let best: number | null = null;
+  let bestScore = Infinity;
+  for (const c of tScale) {
+    if (c >= a || c <= b) continue;
+    let score = wtcMelodicCost(prevT, c);
+    score += wtcHarmonicCost(c, b) * 1.5;
+    score += wtcHarmonicCost(c, a) * 0.8;
+    if (bNext != null) score += wtcHarmonicCost(c, bNext);
+    if (bNext2 != null) score += wtcHarmonicCost(c, bNext2) * 0.5;
+    score += leapResolutionCost(prevPrevT, prevT, c);
+    // Contrary motion T–B
+    if (bPrev != null) {
+      const bDir = Math.sign(b - bPrev);
+      const tDir = Math.sign(c - prevT);
+      if (bDir !== 0 && tDir !== 0 && bDir !== tDir) score -= 4;
+    }
+    if (hasParallel(sPrev, prevT, s, c)) score += 20;
+    if (hasParallel(bPrev, prevT, b, c)) score += 20;
+    score += Math.abs(c - T_REG[2]) * 0.1;
+    if (score < bestScore) {
+      bestScore = score;
+      best = c;
+    }
+  }
+  if (best == null) {
+    const mid = Math.floor((a + b) / 2);
+    best = tScale.reduce((acc, n) => {
+      if (n >= a || n <= b) return acc;
+      return Math.abs(n - mid) < Math.abs(acc - mid) ? n : acc;
+    }, tScale.find((n) => n > b && n < a) ?? tScale[0]);
+  }
+  return best;
+}
+
+// ============================================================
 // MAIN PIPELINE
 // ============================================================
 export function processSequence(
@@ -392,7 +526,28 @@ export function processSequence(
   let prevA = 62;
   let prevT = 52;
 
-  if (aproxLevel === 7) {
+  if (aproxLevel === 8) {
+    // Bach/WTC-inspired: stepwise preference, 3rd/6th harmony,
+    // leap resolution, contrary motion, 2-step lookahead
+    let prevPrevA: number | null = null;
+    let prevPrevT: number | null = null;
+    for (let i = 0; i < tetras.length; i++) {
+      const s = sNotes[i];
+      const b = bNotes[i];
+      const sPrev = i > 0 ? sNotes[i - 1] : null;
+      const bPrev = i > 0 ? bNotes[i - 1] : null;
+      const bNext = i < tetras.length - 1 ? bNotes[i + 1] : null;
+      const bNext2 = i < tetras.length - 2 ? bNotes[i + 2] : null;
+      const a = generateAltoWTC(s, b, prevA, prevPrevA, sPrev, bNext, bNext2, aScale);
+      const t = generateTenorWTC(s, b, a, prevT, prevPrevT, sPrev, bPrev, bNext, bNext2, tScale);
+      aNotes.push(a);
+      tNotes.push(t);
+      prevPrevA = prevA;
+      prevPrevT = prevT;
+      prevA = a;
+      prevT = t;
+    }
+  } else if (aproxLevel === 7) {
     // Lookahead path
     for (let i = 0; i < tetras.length; i++) {
       const s = sNotes[i];
