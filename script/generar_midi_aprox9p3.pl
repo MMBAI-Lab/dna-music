@@ -452,11 +452,11 @@ my $tempo_track = vlq(0)."\xFF\x03\x05Tempo"
 
 my $t_sop = build_track(\@s_notes, \@s_dur, 0,  0, 'Soprano - Grand Piano');
 my $t_alt = build_track(\@a_notes, \@s_dur, 1,  0, 'Alto - Grand Piano');
-# Tenor +8va: desplazar +12 semitones solo en la salida MIDI.
+# Tenor +15ma: desplazar +24 semitones (2 octavas) solo en la salida MIDI.
 # La conducción de voces se calculó en C3–G4; el desplazamiento es
 # puramente de salida — no afecta armonía (intervalos mod 12 iguales).
-my @t_notes_8va = map { my $n = $_ + 12; $n > 127 ? 127 : $n } @t_notes;
-my $t_ten = build_track(\@t_notes_8va, \@b_dur, 2,  0, 'Tenor +8va - Grand Piano');
+my @t_notes_8va = map { my $n = $_ + 24; $n > 127 ? 127 : $n } @t_notes;
+my $t_ten = build_track(\@t_notes_8va, \@b_dur, 2,  0, 'Tenor +15ma - Grand Piano');
 my $t_bas = build_track(\@b_notes, \@b_dur, 3, 43, 'Bajo - Contrabajo');
 
 my $midi = "MThd".pack('N',6).pack('n',1).pack('n',5).pack('n',$ticks);
