@@ -280,25 +280,25 @@ export default function PlayerPage({ lang }: { lang: Lang }) {
                 <div className="flex items-end gap-3 rounded-sm border border-zinc-900 bg-black/40 p-3 shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)]">
                   <Fader
                     label={c.mix_voice.s}
-                    subLabel={(aproxLevel === 10 ? c.mix_voice_origin_10 : c.mix_voice_origin).s}
+                    subLabel={(aproxLevel === 10 || aproxLevel === 11 ? c.mix_voice_origin_10 : c.mix_voice_origin).s}
                     value={mix.s}
                     onChange={(v) => setMix((m) => ({ ...m, s: v }))}
                   />
                   <Fader
                     label={c.mix_voice.a}
-                    subLabel={(aproxLevel === 10 ? c.mix_voice_origin_10 : c.mix_voice_origin).a}
+                    subLabel={(aproxLevel === 10 || aproxLevel === 11 ? c.mix_voice_origin_10 : c.mix_voice_origin).a}
                     value={mix.a}
                     onChange={(v) => setMix((m) => ({ ...m, a: v }))}
                   />
                   <Fader
                     label={c.mix_voice.t}
-                    subLabel={(aproxLevel === 10 ? c.mix_voice_origin_10 : c.mix_voice_origin).t}
+                    subLabel={(aproxLevel === 10 || aproxLevel === 11 ? c.mix_voice_origin_10 : c.mix_voice_origin).t}
                     value={mix.t}
                     onChange={(v) => setMix((m) => ({ ...m, t: v }))}
                   />
                   <Fader
                     label={c.mix_voice.b}
-                    subLabel={(aproxLevel === 10 ? c.mix_voice_origin_10 : c.mix_voice_origin).b}
+                    subLabel={(aproxLevel === 10 || aproxLevel === 11 ? c.mix_voice_origin_10 : c.mix_voice_origin).b}
                     value={mix.b}
                     onChange={(v) => setMix((m) => ({ ...m, b: v }))}
                   />
