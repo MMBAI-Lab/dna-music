@@ -45,6 +45,32 @@ export type ScaleKey = keyof typeof SCALES;
 export type AproxLevel = 5 | 6 | 7 | 8 | 9;
 export const APROX_LEVELS: AproxLevel[] = [5, 6, 7, 8, 9];
 
+// Meter: "free" uses the full 5-figure WTC palette; "4/4" restricts to
+// {corchea, negra, blanca} — figures that divide 4/4 measures exactly.
+export type TimeSignature = "free" | "4/4";
+
+// 4/4-compatible figures: 8th (240), quarter (480), half (960).
+// Dotted figures (360, 720) are excluded because they don't divide
+// 4 beats (1920 ticks) evenly.
+const METER_4_4_FIGS: number[] = [240, 480, 960];
+
+export function applyMeterQuantize(durs: number[]): number[] {
+  if (durs.length === 0) return [];
+  const pal = METER_4_4_FIGS;
+  const snap = (d: number) => pal.reduce((a, b) => Math.abs(b - d) < Math.abs(a - d) ? b : a);
+  const snapped = durs.map(snap);
+  // Enforce max 2:1 transition (skip-level jumps like 240→960 = 4:1 are capped).
+  const result = [snapped[0]];
+  for (let i = 1; i < snapped.length; i++) {
+    const prev = result[i - 1];
+    const curr = snapped[i];
+    if (curr > prev * 2) result.push(pal.filter(f => f <= prev * 2).pop() ?? prev);
+    else if (curr * 2 < prev) result.push(pal.find(f => f >= prev / 2) ?? prev);
+    else result.push(curr);
+  }
+  return result;
+}
+
 // Chromatic 12-tone set — bypasses snap-to-scale so the dataset's raw
 // pitches survive verbatim. Inner voices (A, T) are then chosen from the
 // full chromatic in their register, not a 7-note diatonic subset.
@@ -88,6 +114,7 @@ export interface ProcessResult {
   seq: string;
   chroma: readonly number[];
   aproxLevel: AproxLevel;
+  timeSignature: TimeSignature;
 }
 
 // ============================================================
@@ -549,6 +576,7 @@ export function processSequence(
   aproxLevel: AproxLevel,
   tables: Tables,
   tonalMode: boolean = true,
+  timeSignature: TimeSignature = "free",
 ): ProcessResult {
   const chroma = tonalMode ? SCALES[scaleKey] : CHROMATIC;
   const sScale = scaleNotesInRange(chroma, S_REG[0], S_REG[1]);
@@ -577,10 +605,16 @@ export function processSequence(
     sDurs.push(useLinearTicks ? row.mg_ticks_lin : row.mg_ticks_log);
     bDurs.push(useLinearTicks ? row.mn_ticks_lin : row.mn_ticks_log);
   }
-  // aprox9: WTC rhythmic normalisation applied before voice generation
+  // Rhythmic post-processing:
+  // aprox9 applies WTC run-homogenisation first, then any active meter quantize.
+  // Other aprox levels: only meter quantize if a meter is selected.
   if (aproxLevel === 9) {
     sDurs.splice(0, sDurs.length, ...applyWTCRhythm([...sDurs]));
     bDurs.splice(0, bDurs.length, ...applyWTCRhythm([...bDurs]));
+  }
+  if (timeSignature === "4/4") {
+    sDurs.splice(0, sDurs.length, ...applyMeterQuantize([...sDurs]));
+    bDurs.splice(0, bDurs.length, ...applyMeterQuantize([...bDurs]));
   }
 
   const sNotes = applyVoiceLeading(sRaw, 7, S_REG[0], S_REG[1]);
@@ -650,7 +684,7 @@ export function processSequence(
     }
   }
 
-  return { tetras, sNotes, aNotes, tNotes, bNotes, sDurs, bDurs, seq, chroma, aproxLevel };
+  return { tetras, sNotes, aNotes, tNotes, bNotes, sDurs, bDurs, seq, chroma, aproxLevel, timeSignature };
 }
 
 // ============================================================
@@ -709,12 +743,21 @@ export function buildMidi(
   mix: VoiceMix = DEFAULT_MIX,
 ): Uint8Array {
   const tempoUs = Math.round(60_000_000 / bpm);
+  const timeSigBytes: number[] =
+    result.timeSignature === "4/4"
+      ? [
+          // FF 58 04 nn dd cc bb — MIDI time signature meta event
+          // nn=4 (numerator), dd=2 (2^2=4, denominator), cc=24, bb=8
+          ...vlq(0), 0xff, 0x58, 0x04, 0x04, 0x02, 0x18, 0x08,
+        ]
+      : [];
   const tempoTrack: number[] = [
     ...vlq(0),
     0xff,
     0x03,
     5,
     ...strBytes("Tempo"),
+    ...timeSigBytes,
     ...vlq(0),
     0xff,
     0x51,

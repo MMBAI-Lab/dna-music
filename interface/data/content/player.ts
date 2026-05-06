@@ -34,6 +34,9 @@ export const PLAYER: Record<Lang, {
   chromatic_label: string;
   aprox_label: string;
   aprox_select_label: string;
+  meter_label: string;
+  meter_free: string;
+  meter_44: string;
   aprox_active: string;
   aprox_full: (n: number) => string;
   aprox_descriptions: Record<5 | 6 | 7 | 8 | 9, string>;
@@ -96,6 +99,9 @@ export const PLAYER: Record<Lang, {
     },
     aprox_label: "Algorithm",
     aprox_select_label: "Select",
+    meter_label: "Meter",
+    meter_free: "Free",
+    meter_44: "4/4",
     aprox_active: "Active",
     aprox_full: (n) => `Approximation ${n}`,
     aprox_descriptions: {
@@ -175,6 +181,9 @@ export const PLAYER: Record<Lang, {
     },
     aprox_label: "Algoritmo",
     aprox_select_label: "Elegir",
+    meter_label: "Compás",
+    meter_free: "Libre",
+    meter_44: "4/4",
     aprox_active: "Activo",
     aprox_full: (n) => `Aproximación ${n}`,
     aprox_descriptions: {

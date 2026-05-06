@@ -20,6 +20,7 @@ import {
   midiName,
   processSequence,
   type AproxLevel,
+  type TimeSignature,
   type ProcessResult,
   type ScaleKey,
   type Tables,
@@ -44,6 +45,7 @@ export default function PlayerPage({ lang }: { lang: Lang }) {
   const [scaleKey, setScaleKey] = useState<ScaleKey>("d_minor");
   const [tonalMode, setTonalMode] = useState(true);
   const [aproxLevel, setAproxLevel] = useState<AproxLevel>(7);
+  const [timeSignature, setTimeSignature] = useState<TimeSignature>("free");
   const [mix, setMix] = useState<VoiceMix>(DEFAULT_MIX);
   const [bpm, setBpm] = useState(72);
   const [result, setResult] = useState<ProcessResult | null>(null);
@@ -107,7 +109,7 @@ export default function PlayerPage({ lang }: { lang: Lang }) {
     try {
       stopPlayback();
       setPlaying(false);
-      const r = processSequence(seq, scaleKey, aproxLevel, tables, tonalMode);
+      const r = processSequence(seq, scaleKey, aproxLevel, tables, tonalMode, timeSignature);
       const bytes = buildMidi(r, bpm, mix);
       const blob = new Blob([new Uint8Array(bytes)], { type: "audio/midi" });
       const url = URL.createObjectURL(blob);
@@ -307,12 +309,52 @@ export default function PlayerPage({ lang }: { lang: Lang }) {
             {/* Algorithm rocker + LCD readout, and Tempo knob */}
             <div className="mt-8 flex flex-col gap-8 md:flex-row md:items-start md:justify-between md:gap-10">
               <div className="flex-1">
-                <p
-                  id="aprox-bank-label"
-                  className="text-[0.65rem] font-bold uppercase tracking-[0.3em] text-zinc-300"
-                >
-                  {c.aprox_label}
-                </p>
+                <div className="flex items-center justify-between">
+                  <p
+                    id="aprox-bank-label"
+                    className="text-[0.65rem] font-bold uppercase tracking-[0.3em] text-zinc-300"
+                  >
+                    {c.aprox_label}
+                  </p>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={timeSignature === "4/4"}
+                    onClick={() =>
+                      setTimeSignature((v) => (v === "free" ? "4/4" : "free"))
+                    }
+                    className="flex select-none items-center gap-2 rounded px-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                  >
+                    <span
+                      aria-hidden
+                      className="block h-2 w-2 rounded-full transition-shadow"
+                      style={{
+                        background:
+                          timeSignature === "4/4"
+                            ? "rgb(var(--accent))"
+                            : "rgba(80,80,80,0.45)",
+                        boxShadow:
+                          timeSignature === "4/4"
+                            ? "0 0 8px 1px rgba(var(--accent) / 0.7), inset 0 0 1px rgba(255,255,255,0.5)"
+                            : "inset 0 0 2px rgba(0,0,0,0.6)",
+                      }}
+                    />
+                    <span className="font-mono text-[0.6rem] font-bold uppercase tracking-[0.2em] text-zinc-300">
+                      {c.meter_label}
+                    </span>
+                    <span
+                      className="font-mono text-[0.55rem] font-bold uppercase tracking-[0.2em]"
+                      style={{
+                        color:
+                          timeSignature === "4/4"
+                            ? "rgb(var(--accent))"
+                            : "rgba(170,170,170,0.55)",
+                      }}
+                    >
+                      {timeSignature === "4/4" ? c.meter_44 : c.meter_free}
+                    </span>
+                  </button>
+                </div>
                 <div className="mt-3 flex items-stretch gap-4 rounded-sm border border-zinc-900 bg-black/40 p-4 shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)]">
                   <RockerSwitch
                     value={aproxLevel}
