@@ -4,19 +4,15 @@ use warnings;
 use POSIX qw(floor);
 
 # ================================================================
-# aprox11/prueba2 - S arco + compas 4/4 en arco planificada
+# aprox11/prueba2 - S arco (ap11) + inversion T/B (ap10) + compas 4/4
 #
-# REGLAS SOLO EN VOZ S:
-#   Intervalos: m2(1) M2(2) m3(3) M3(4) P4(5) P5(7) m6(8) M6(9) P8(12)
-#   Arco: ascenso -> punto algido (~60%) -> descenso.
-#   Punto algido = percentil 75 de sScale; no se repite.
-#   Saltos totales (>M2): 2-4. Saltos > P4: max 2.
-#   Tras salto > M3: cambio de sentido obligatorio (preferible grado).
-#   Tras 3ra: puede continuar mismo sentido.
-#   Evitar 2 saltos consecutivos misma direccion.
-#   No mas de 2 saltos consecutivos en general.
-#
-# VOCES A,T,B: conduccion WTC (aprox8).
+# VOZ S: melodia en arco (reglas aprox11 - igual que prueba1).
+# INVERSION T/B (igual que aprox10):
+#   T lleva mn_midi (ajustado a registro Tenor C3-G4).
+#   B se genera algoritmicamente por debajo de T.
+#   A se genera entre T y S (referencia armonica = T).
+#   R7 aplicado a S-T en lugar de S-B.
+# COMPAS 4/4: paleta {corchea, negra, blanca} + meta-evento 4/4.
 # ================================================================
 
 my %ni=(C=>0,'C#'=>1,D=>2,'D#'=>3,E=>4,F=>5,'F#'=>6,
@@ -65,7 +61,8 @@ sub dmr {
 my @SS=dmr(62,86);  # Soprano D4-D6
 my @AS=dmr(55,72);  # Alto G3-C5
 my @TS=dmr(48,67);  # Tenor C3-G4
-my $AC=62; my $TC=57;
+my @BS=dmr(38,62);   # Bass D2-D4
+my $AC=62; my $TC=57; my $BC=50;
 
 my %ALLOWED=(1=>1,2=>1,3=>1,4=>1,5=>1,7=>1,8=>1,9=>1,12=>1);
 
@@ -226,29 +223,51 @@ sub gen_alto {
     }
     $best//$pa
 }
-sub gen_tenor {
-    my($s,$b,$a,$pt,$ppt,$sp,$bp,$bn,$bn2)=@_; $pt//=57;
+# Alto: generated between T_data and S (aprox10 role swap)
+sub gen_alto_ap10 {
+    my($s,$t,$pa,$ppa,$sp,$tn,$tn2)=@_; $pa//=62;
     my($best,$bs)=(undef,1e9);
-    for my $c(@TS){
-        next if $c>=$a||$c<=$b;
-        my $sc=wmc($pt,$c)+1.5*whc($c,$b)+0.8*whc($c,$a);
-        $sc+=whc($c,$bn)      if defined $bn;
-        $sc+=0.5*whc($c,$bn2) if defined $bn2;
-        $sc+=lrc($ppt,$pt,$c);
-        if(defined $bp){
-            my $bd=($b>$bp)?1:($b<$bp)?-1:0;
-            my $td=($c>$pt)?1:($c<$pt)?-1:0;
-            $sc-=4 if $bd!=0&&$td!=0&&$bd!=$td;
+    for my $c(@AS){
+        next if $c>=$s||$c<=$t;    # T < A < S
+        my $sc=wmc($pa,$c)+2*whc($c,$t);
+        $sc+=whc($c,$tn)      if defined $tn;
+        $sc+=0.5*whc($c,$tn2) if defined $tn2;
+        $sc+=lrc($ppa,$pa,$c);
+        if(defined $sp){
+            my $sd=($s>$sp)?1:($s<$sp)?-1:0;
+            my $ad=($c>$pa)?1:($c<$pa)?-1:0;
+            $sc-=5 if $sd!=0&&$ad!=0&&$sd!=$ad;
         }
-        $sc+=20 if has_par($sp,$pt,$s,$c);
-        $sc+=20 if has_par($bp,$pt,$b,$c);
-        $sc+=0.1*abs($c-$TC);
+        $sc+=20 if has_par($sp,$pa,$s,$c);
+        $sc+=4  if ($s-$c)<3;
+        $sc+=0.1*abs($c-$AC);
+        if($sc<$bs){$bs=$sc;$best=$c;}
+    }
+    $best//$pa
+}
+
+# Bass: generated below T_data (aprox10 role swap)
+sub gen_bass_ap10 {
+    my($t,$a,$pb,$ppb,$tp,$tn,$tn2)=@_; $pb//=$BC;
+    my($best,$bs)=(undef,1e9);
+    for my $c(@BS){
+        next if $c>=$t;    # B < T
+        my $sc=wmc($pb,$c)+1.5*whc($c,$t)+0.5*whc($c,$a);
+        $sc+=whc($c,$tn)      if defined $tn;
+        $sc+=0.5*whc($c,$tn2) if defined $tn2;
+        $sc+=lrc($ppb,$pb,$c);
+        if(defined $tp){
+            my $td=($t>$tp)?1:($t<$tp)?-1:0;
+            my $bd=($c>$pb)?1:($c<$pb)?-1:0;
+            $sc-=4 if $td!=0&&$bd!=0&&$td!=$bd;
+        }
+        $sc+=0.1*abs($c-$BC);
         if($sc<$bs){$bs=$sc;$best=$c;}
     }
     unless(defined $best){
-        my $mid=int(($a+$b)/2);
-        ($best)=sort{abs($a-$mid)<=>abs($b-$mid)}grep{$_>$b&&$_<$a}@TS;
-        $best//=57;
+        my $mid=int(($t+38)/2);
+        ($best)=sort{abs($a-$mid)<=>abs($b-$mid)}grep{$_>=38&&$_<$t}@BS;
+        $best//=38;
     }
     $best
 }
@@ -311,35 +330,45 @@ my $seq='GCAACGTGCTATGGAAGCGCAATAAGTACCAGGAGCGCAGAAACAGCTCTGCGCGCAGGCGCAAGACTGAG
 my @tetras;
 for(my$i=0;$i+4<=length($seq);$i++){push@tetras,substr($seq,$i,4);}
 
-my(@sr,@br,@sd,@bd);
+my(@sr,@tr_raw,@sd,@td);
 for my $t(@tetras){
-    push @sr,force_reg(snap_dm($mg{$t}),69,62,86);
-    push @sd,ptl(gtm(\%mgt,$t),$mgmn,$mgmx);
-    push @br,force_reg(snap_dm($mn{$t}),50,38,62);
-    push @bd,ptl(gtm(\%mnt,$t),$mnmn,$mnmx);
+    push @sr,     force_reg(snap_dm($mg{$t}),69,62,86);
+    push @sd,     ptl(gtm(\%mgt,$t),$mgmn,$mgmx);
+    push @tr_raw, force_reg(snap_dm($mn{$t}),57,48,67);  # T register
+    push @td,     ptl(gtm(\%mnt,$t),$mnmn,$mnmx);
 }
 
-# S arch melody (aprox11) + B standard
+# S arch melody (aprox11 rules)
 my @sarch = gen_soprano_arch(\@sr,\@SS);
-my @bvl   = vl(\@br,7,38,62);
 
-# R7 on arch S-B
+# T from mn_midi data (T register), B will be generated fix
+my @tvl = vl(\@tr_raw,7,48,67);
+
+# R7 equivalent: anti-parallel S-T (T is now the data voice)
+sub chk_par_st {
+    my($ps,$pt,$s,$t)=@_; return $s unless defined $ps;
+    my($pi,$ci)=(($ps-$pt)%12,($s-$t)%12);
+    if(($pi==7&&$ci==7)||($pi==0&&$ci==0)){
+        for my $i(0..$#SS-1){return $SS[$i+1] if $SS[$i]==$s;}
+    }
+    $s
+}
 for my $i(1..$#sarch){
-    $sarch[$i]=chk_par_sb($sarch[$i-1],$bvl[$i-1],$sarch[$i],$bvl[$i]);
+    $sarch[$i]=chk_par_st($sarch[$i-1],$tvl[$i-1],$sarch[$i],$tvl[$i]);
 }
 
-# A and T (WTC aprox8 voice leading)
-my(@an,@tn); my($pa,$pt)=(62,57); my($ppa,$ppt)=(undef,undef);
+# A between T and S; B generated below T
+my(@an,@bn); my($pa,$pb)=(62,$BC); my($ppa,$ppb)=(undef,undef);
 for my $i(0..$#tetras){
-    my($s,$b)=($sarch[$i],$bvl[$i]);
+    my($s,$t)=($sarch[$i],$tvl[$i]);
     my $sp=$i>0?$sarch[$i-1]:undef;
-    my $bp=$i>0?$bvl[$i-1]:undef;
-    my $bn=$i<$#tetras?$bvl[$i+1]:undef;
-    my $bn2=$i<$#tetras-1?$bvl[$i+2]:undef;
-    my $a=gen_alto($s,$b,$pa,$ppa,$sp,$bn,$bn2);
-    my $t=gen_tenor($s,$b,$a,$pt,$ppt,$sp,$bp,$bn,$bn2);
-    push @an,$a; push @tn,$t;
-    ($ppa,$ppt)=($pa,$pt); ($pa,$pt)=($a,$t);
+    my $tp=$i>0?$tvl[$i-1]:undef;
+    my $tn=$i<$#tetras?$tvl[$i+1]:undef;
+    my $tn2=$i<$#tetras-1?$tvl[$i+2]:undef;
+    my $a=gen_alto_ap10($s,$t,$pa,$ppa,$sp,$tn,$tn2);
+    my $b=gen_bass_ap10($t,$a,$pb,$ppb,$tp,$tn,$tn2);
+    push @an,$a; push @bn,$b;
+    ($ppa,$ppb)=($pa,$pb); ($pa,$pb)=($a,$b);
 }
 
 # ---------------------------------------------------------------
@@ -371,8 +400,8 @@ $midi.=midi_chunk("MTrk",$_) for (
     $tt,
     btrk(\@sarch,\@sd,0, 0,'Soprano-arch'),
     btrk(\@an,   \@sd,1, 0,'Alto-Fix'),
-    btrk(\@tn,   \@bd,2, 0,'Tenor-Fix'),
-    btrk(\@bvl,  \@bd,3,43,'Bajo-mn'),
+    btrk(\@tvl,  \@td,2, 0,'Tenor-mn-dato'),
+    btrk(\@bn,   \@td,3,43,'Bajo-Fix'),
 );
 
 my $out="$base/aprox11/prueba2/prueba2.mid";
@@ -390,6 +419,13 @@ for my $i(1..$#sarch){
     my $iv=abs($sarch[$i]-$sarch[$i-1]);
     if($iv<=2){$step_c++;}else{$leap_c++;$big_c++ if $iv>5;}
 }
+my(@CONSONANT)=(0,3,4,7,8,9);
+sub isco{my $i=($_[0]-$_[1])%12;scalar grep{$_==$i}@CONSONANT}
+my($dis_at,$dis_bt)=(0,0);
+for my $i(0..$#an){
+    $dis_at++ unless isco($an[$i],$tvl[$i]);
+    $dis_bt++ unless isco($bn[$i],$tvl[$i]);
+}
 my $cn=$SS[int(scalar(@SS)*0.75)];
 my $cp=int(scalar(@tetras)*0.60+0.5);
 my($cmax,$cpf)=(0,-1);
@@ -400,12 +436,13 @@ print "Generado: $out\n";
 printf "Tetranucleotidos: %d | Tempo: 72 BPM\n",$N;
 printf "Punto algido planificado: %s MIDI=%d pos=%d\n",mn2($cn),$cn,$cp;
 printf "Nota mas alta generada:   %s MIDI=%d pos=%d\n",mn2($cmax),$cmax,$cpf;
-printf "Saltos totales: %d (esperado 2-4)\n",$leap_c;
-printf "Saltos > P4:    %d (max 2)\n",$big_c;
-printf "Grado conjunto: %d/%d (%.1f%%)\n",$step_c,$N-1,($N>1?100*$step_c/($N-1):0);
+printf "Roles: S=mg-arco  A=Fix  T=mn-dato  B=Fix  | Compas: 4/4\n";
+printf "Saltos S totales: %d (esperado 2-4) | Saltos > P4: %d (max 2)\n",$leap_c,$big_c;
+printf "Grado conjunto S: %d/%d (%.1f%%)\n",$step_c,$N-1,($N>1?100*$step_c/($N-1):0);
+printf "Disonancias A-T: %d/%d | B-T: %d/%d\n",$dis_at,$N,$dis_bt,$N;
 print "\nMuestra primeras 8 notas (SATB):\n";
 printf "%-6s  S:%-5s  A:%-5s  T:%-5s  B:%-5s\n",
-    $tetras[$_],mn2($sarch[$_]),mn2($an[$_]),mn2($tn[$_]),mn2($bvl[$_])
+    $tetras[$_],mn2($sarch[$_]),mn2($an[$_]),mn2($tvl[$_]),mn2($bn[$_])
     for 0..7;
 printf "\nNotas S alrededor del punto algido (pos %d):\n",$cp;
 for my $i(($cp-2)..($cp+2)){
