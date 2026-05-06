@@ -39,10 +39,11 @@ export const PLAYER: Record<Lang, {
   meter_44: string;
   aprox_active: string;
   aprox_full: (n: number) => string;
-  aprox_descriptions: Record<5 | 6 | 7 | 8 | 9, string>;
+  aprox_descriptions: Record<5 | 6 | 7 | 8 | 9 | 10, string>;
   mix_label: string;
   mix_voice: { s: string; a: string; t: string; b: string };
   mix_voice_origin: { s: string; a: string; t: string; b: string };
+  mix_voice_origin_10: { s: string; a: string; t: string; b: string };
   bpm_label: string;
   bpm_unit: string;
   generate: string;
@@ -110,6 +111,7 @@ export const PLAYER: Record<Lang, {
       7: "Logarithmic duration · lookahead-aware cost (penalises semitones, tritones, parallels)",
       8: "Logarithmic duration · Bach/WTC-informed: stepwise preference, 3rds & 6ths, leap resolution, 2-step lookahead",
       9: "Logarithmic duration · WTC rhythmic normalisation (run homogenisation, max 2:1 transitions, binary groupings) · WTC voice leading",
+      10: "Logarithmic duration · WTC voice leading · voice-role swap: T carries minor-groove data, B is the generated fix voice",
     },
     mix_label: "Volume Mix",
     mix_voice: { s: "Soprano", a: "Alto", t: "Tenor", b: "Bass" },
@@ -118,6 +120,12 @@ export const PLAYER: Record<Lang, {
       a: "Fix",
       t: "Fix",
       b: "Minor groove",
+    },
+    mix_voice_origin_10: {
+      s: "Major groove",
+      a: "Fix",
+      t: "Minor groove",
+      b: "Fix",
     },
     bpm_label: "Tempo",
     bpm_unit: "BPM",
@@ -192,6 +200,7 @@ export const PLAYER: Record<Lang, {
       7: "Duración logarítmica · coste con anticipación (penaliza semitonos, tritonos, paralelos)",
       8: "Duración logarítmica · inspirado en Bach/CBI: grado conjunto, 3ras y 6tas, resolución de saltos, anticipación a 2 pasos",
       9: "Duración logarítmica · normalización rítmica del CBI (homogeneización de grupos, transiciones máx. 2:1, agrupaciones binarias) · conducción de voces del CBI",
+      10: "Duración logarítmica · conducción de voces CBI · inversión de roles: T lleva los datos del surco menor, B es la voz generada (fix)",
     },
     mix_label: "Mezcla de volumen",
     mix_voice: { s: "Soprano", a: "Alto", t: "Tenor", b: "Bajo" },
@@ -200,6 +209,12 @@ export const PLAYER: Record<Lang, {
       a: "Fix",
       t: "Fix",
       b: "Surco menor",
+    },
+    mix_voice_origin_10: {
+      s: "Surco mayor",
+      a: "Fix",
+      t: "Surco menor",
+      b: "Fix",
     },
     bpm_label: "Tempo",
     bpm_unit: "BPM",

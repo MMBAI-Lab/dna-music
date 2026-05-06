@@ -42,8 +42,8 @@ export const SCALES = {
 } as const;
 
 export type ScaleKey = keyof typeof SCALES;
-export type AproxLevel = 5 | 6 | 7 | 8 | 9;
-export const APROX_LEVELS: AproxLevel[] = [5, 6, 7, 8, 9];
+export type AproxLevel = 5 | 6 | 7 | 8 | 9 | 10;
+export const APROX_LEVELS: AproxLevel[] = [5, 6, 7, 8, 9, 10];
 
 // Meter: "free" uses the full 5-figure WTC palette; "4/4" restricts to
 // {corchea, negra, blanca} — figures that divide 4/4 measures exactly.
@@ -504,6 +504,92 @@ function generateTenorWTC(
 }
 
 // ============================================================
+// COST VARIANTS — Aprox 10 (T = mn data, B = Fix)
+// ============================================================
+//
+// Voice role swap vs. aprox 5–9:
+//   aprox 5–9:  S=mg(data)  A=Fix  T=Fix  B=mn(data)
+//   aprox  10:  S=mg(data)  A=Fix  T=mn(data)  B=Fix
+//
+// T carries the minor-groove pitch (snapped to T register C3–G4).
+// B is now the algorithmically generated voice, placed below T.
+// A is generated between T (the new lower data voice) and S.
+// Both A and B use WTC harmonic cost (3rds/6ths preferred, P4
+// penalised between inner voices) with 2-step lookahead on T.
+
+// Alto: generated between T_data and S.  T replaces B as harmonic ref.
+function generateAltoAprox10(
+  s: number,
+  t: number,
+  prevA: number,
+  prevPrevA: number | null,
+  sPrev: number | null,
+  tNext: number | null,
+  tNext2: number | null,
+  aScale: number[],
+): number {
+  let best: number | null = null;
+  let bestScore = Infinity;
+  for (const c of aScale) {
+    if (c >= s || c <= t) continue; // T < A < S
+    let score = wtcMelodicCost(prevA, c);
+    score += wtcHarmonicCost(c, t) * 2;
+    if (tNext != null) score += wtcHarmonicCost(c, tNext);
+    if (tNext2 != null) score += wtcHarmonicCost(c, tNext2) * 0.5;
+    score += leapResolutionCost(prevPrevA, prevA, c);
+    if (sPrev != null) {
+      const sDir = Math.sign(s - sPrev);
+      const aDir = Math.sign(c - prevA);
+      if (sDir !== 0 && aDir !== 0 && sDir !== aDir) score -= 5;
+    }
+    if (hasParallel(sPrev, prevA, s, c)) score += 20;
+    if (s - c < 3) score += 4;
+    score += Math.abs(c - A_REG[2]) * 0.1;
+    if (score < bestScore) { bestScore = score; best = c; }
+  }
+  return best ?? prevA;
+}
+
+// Bass: generated below T_data.  B must satisfy B < T.
+function generateBassAprox10(
+  t: number,
+  a: number,
+  prevB: number,
+  prevPrevB: number | null,
+  tPrev: number | null,
+  tNext: number | null,
+  tNext2: number | null,
+  bScale: number[],
+): number {
+  let best: number | null = null;
+  let bestScore = Infinity;
+  for (const c of bScale) {
+    if (c >= t) continue; // B < T
+    let score = wtcMelodicCost(prevB, c);
+    score += wtcHarmonicCost(c, t) * 1.5;
+    score += wtcHarmonicCost(c, a) * 0.5;
+    if (tNext != null) score += wtcHarmonicCost(c, tNext);
+    if (tNext2 != null) score += wtcHarmonicCost(c, tNext2) * 0.5;
+    score += leapResolutionCost(prevPrevB, prevB, c);
+    if (tPrev != null) {
+      const tDir = Math.sign(t - tPrev);
+      const bDir = Math.sign(c - prevB);
+      if (tDir !== 0 && bDir !== 0 && tDir !== bDir) score -= 4;
+    }
+    score += Math.abs(c - B_REG[2]) * 0.1;
+    if (score < bestScore) { bestScore = score; best = c; }
+  }
+  if (best == null) {
+    const mid = Math.floor((t + B_REG[0]) / 2);
+    best = bScale.filter(n => n < t).reduce(
+      (acc, n) => Math.abs(n - mid) < Math.abs(acc - mid) ? n : acc,
+      bScale[0],
+    );
+  }
+  return best;
+}
+
+// ============================================================
 // WTC RHYTHMIC NORMALIZATION — Aprox 9
 // ============================================================
 //
@@ -582,6 +668,7 @@ export function processSequence(
   const sScale = scaleNotesInRange(chroma, S_REG[0], S_REG[1]);
   const aScale = scaleNotesInRange(chroma, A_REG[0], A_REG[1]);
   const tScale = scaleNotesInRange(chroma, T_REG[0], T_REG[1]);
+  const bScale = scaleNotesInRange(chroma, B_REG[0], B_REG[1]); // needed for aprox10
 
   const seq = rawSeq.toUpperCase().replace(/[^ACGT]/g, "");
   const tetras: string[] = [];
@@ -630,7 +717,48 @@ export function processSequence(
   let prevA = 62;
   let prevT = 52;
 
-  if (aproxLevel === 8 || aproxLevel === 9) {
+  if (aproxLevel === 10) {
+    // Aprox 10: T carries mn_midi (minor groove) data; B is the generated fix voice.
+    // T is snapped into the T register (C3–G4), B is generated below T.
+    const tDataRaw = tetras.map(tetra => {
+      const row = tables[tetra]!;
+      return forceRegister(snapToScale(row.mn_midi, chroma), T_REG[2], T_REG[0], T_REG[1]);
+    });
+    const tNotesData = applyVoiceLeading(tDataRaw, 7, T_REG[0], T_REG[1]);
+
+    // Anti-parallel S–T (equivalent of R7, now between S and the new data voice T)
+    for (let i = 1; i < sNotes.length; i++) {
+      sNotes[i] = checkParallelSB(
+        sNotes[i - 1], tNotesData[i - 1], sNotes[i], tNotesData[i], sScale,
+      );
+    }
+
+    const bNotesFixed: number[] = [];
+    let prevB = B_REG[2];
+    let prevPrevA: number | null = null;
+    let prevPrevB: number | null = null;
+
+    for (let i = 0; i < tetras.length; i++) {
+      const s   = sNotes[i];
+      const t10 = tNotesData[i];
+      const sPrev = i > 0            ? sNotes[i - 1]     : null;
+      const tPrev = i > 0            ? tNotesData[i - 1] : null;
+      const tNext = i < tetras.length - 1     ? tNotesData[i + 1] : null;
+      const tNxt2 = i < tetras.length - 2     ? tNotesData[i + 2] : null;
+
+      const a = generateAltoAprox10(s, t10, prevA, prevPrevA, sPrev, tNext, tNxt2, aScale);
+      const b = generateBassAprox10(t10, a, prevB, prevPrevB, tPrev, tNext, tNxt2, bScale);
+
+      aNotes.push(a);
+      tNotes.push(t10);
+      bNotesFixed.push(b);
+      prevPrevA = prevA; prevPrevB = prevB;
+      prevA = a; prevB = b;
+    }
+    // Replace bNotes (currently mn data in B register) with the generated fix voice
+    bNotes.splice(0, bNotes.length, ...bNotesFixed);
+
+  } else if (aproxLevel === 8 || aproxLevel === 9) {
     // aprox8: Bach/WTC voice leading (stepwise, 3rd/6th harmony, leap resolution)
     // aprox9: same voice leading + WTC rhythmic normalisation (applied above)
     // leap resolution, contrary motion, 2-step lookahead
