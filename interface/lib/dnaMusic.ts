@@ -1073,26 +1073,23 @@ export function processSequence(
       prevT = t;
     }
   } else if (aproxLevel === 12) {
-    // 3-voice triadic: compact middle register (C3–D5), voices assigned by pitch.
-    // Mirrors the v4 Python approach: both grooves mapped to a single middle range,
-    // then upper=S, lower=B, T=triad completion. No extreme S/B register spread.
-    const MID_LO = 48, MID_HI = 74, MID_CTR = 60; // C3–D5, centre C4
-    const forceMid = (midi: number) => forceRegister(midi, MID_CTR, MID_LO, MID_HI);
-
-    const mgMid = tetras.map(t => {
-      const row = tables[t]; if (!row) return MID_CTR;
-      return forceMid(snapToScale(row.mg_midi, chroma));
+    // 3-voice triadic: raw groove notes without S/B register forcing.
+    // Mirrors v2–v4 Python approach: mg_midi and mn_midi used as-is
+    // (with optional scale snap in tonal mode), voice-led for smoothness,
+    // then upper=S, lower=B, T=triad third anchored on the lower note.
+    const mgRaw = tetras.map(t => {
+      const row = tables[t]; if (!row) return 60;
+      return snapToScale(row.mg_midi, chroma);
     });
-    const mnMid = tetras.map(t => {
-      const row = tables[t]; if (!row) return MID_CTR;
-      return forceMid(snapToScale(row.mn_midi, chroma));
+    const mnRaw = tetras.map(t => {
+      const row = tables[t]; if (!row) return 60;
+      return snapToScale(row.mn_midi, chroma);
     });
-    const mgVL = applyVoiceLeading(mgMid, 7, MID_LO, MID_HI);
-    const mnVL = applyVoiceLeading(mnMid, 7, MID_LO, MID_HI);
+    const mgVL = applyVoiceLeading(mgRaw, 7, 24, 96);
+    const mnVL = applyVoiceLeading(mnRaw, 7, 24, 96);
 
     for (let i = 0; i < tetras.length; i++) {
       const mg = mgVL[i], mn = mnVL[i];
-      // Upper voice → S slot, lower voice → B slot (swap sDurs/bDurs too)
       const upper = Math.max(mg, mn), lower = Math.min(mg, mn);
       sNotes[i] = upper;
       bNotes[i] = lower;
