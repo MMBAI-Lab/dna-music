@@ -1073,12 +1073,31 @@ export function processSequence(
       prevT = t;
     }
   } else if (aproxLevel === 12) {
-    // 3-voice triadic: T = triad completion from B→S; A = silent placeholder
+    // 3-voice triadic: compact middle register (C3–D5), voices assigned by pitch.
+    // Mirrors the v4 Python approach: both grooves mapped to a single middle range,
+    // then upper=S, lower=B, T=triad completion. No extreme S/B register spread.
+    const MID_LO = 48, MID_HI = 74, MID_CTR = 60; // C3–D5, centre C4
+    const forceMid = (midi: number) => forceRegister(midi, MID_CTR, MID_LO, MID_HI);
+
+    const mgMid = tetras.map(t => {
+      const row = tables[t]; if (!row) return MID_CTR;
+      return forceMid(snapToScale(row.mg_midi, chroma));
+    });
+    const mnMid = tetras.map(t => {
+      const row = tables[t]; if (!row) return MID_CTR;
+      return forceMid(snapToScale(row.mn_midi, chroma));
+    });
+    const mgVL = applyVoiceLeading(mgMid, 7, MID_LO, MID_HI);
+    const mnVL = applyVoiceLeading(mnMid, 7, MID_LO, MID_HI);
+
     for (let i = 0; i < tetras.length; i++) {
-      const s = sNotes[i];
-      const b = bNotes[i];
-      tNotes.push(findTriadThird(b, s));
-      aNotes.push(s); // placeholder — always muted by UI for aprox12
+      const mg = mgVL[i], mn = mnVL[i];
+      // Upper voice → S slot, lower voice → B slot (swap sDurs/bDurs too)
+      const upper = Math.max(mg, mn), lower = Math.min(mg, mn);
+      sNotes[i] = upper;
+      bNotes[i] = lower;
+      tNotes.push(findTriadThird(lower, upper));
+      aNotes.push(upper); // placeholder — always muted
     }
   } else if (aproxLevel === 7) {
     // Lookahead path
