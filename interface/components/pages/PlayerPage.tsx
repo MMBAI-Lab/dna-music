@@ -97,6 +97,15 @@ export default function PlayerPage({ lang }: { lang: Lang }) {
   const cleaned = seq.toUpperCase().replace(/[^ACGT]/g, "");
   const baseCount = Math.min(cleaned.length, MAX_BASES);
 
+  // aprox12 is 3-voice: Alto is always silent
+  const effectiveMix: VoiceMix = aproxLevel === 12 ? { ...mix, a: 0 } : mix;
+  // Voice origin sub-labels
+  const voiceOrigin = aproxLevel === 12
+    ? c.mix_voice_origin_12
+    : aproxLevel === 10 || aproxLevel === 11
+      ? c.mix_voice_origin_10
+      : c.mix_voice_origin;
+
   function onGenerate() {
     if (!tables) {
       setStatus({ kind: "error", msg: "Data not loaded yet." });
@@ -110,14 +119,14 @@ export default function PlayerPage({ lang }: { lang: Lang }) {
       stopPlayback();
       setPlaying(false);
       const r = processSequence(seq, scaleKey, aproxLevel, tables, tonalMode, timeSignature);
-      const bytes = buildMidi(r, bpm, mix);
+      const bytes = buildMidi(r, bpm, effectiveMix);
       const blob = new Blob([new Uint8Array(bytes)], { type: "audio/midi" });
       const url = URL.createObjectURL(blob);
       if (lastUrlRef.current) URL.revokeObjectURL(lastUrlRef.current);
       lastUrlRef.current = url;
       setMidiUrl(url);
       setResult(r);
-      schedulePlayback(r, bpm, mix, () => setPlaying(false));
+      schedulePlayback(r, bpm, effectiveMix, () => setPlaying(false));
       setStatus({
         kind: "ok",
         msg: c.status_done(r.tetras.length, estimateDuration(r.sDurs, r.bDurs, bpm), bpm),
@@ -141,7 +150,7 @@ export default function PlayerPage({ lang }: { lang: Lang }) {
   async function onRewind() {
     if (!result) return;
     stopPlayback();
-    schedulePlayback(result, bpm, mix, () => setPlaying(false));
+    schedulePlayback(result, bpm, effectiveMix, () => setPlaying(false));
     await startPlayback();
     setPlaying(true);
   }
@@ -280,25 +289,27 @@ export default function PlayerPage({ lang }: { lang: Lang }) {
                 <div className="flex items-end gap-3 rounded-sm border border-zinc-900 bg-black/40 p-3 shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)]">
                   <Fader
                     label={c.mix_voice.s}
-                    subLabel={(aproxLevel === 10 || aproxLevel === 11 ? c.mix_voice_origin_10 : c.mix_voice_origin).s}
+                    subLabel={(voiceOrigin).s}
                     value={mix.s}
                     onChange={(v) => setMix((m) => ({ ...m, s: v }))}
                   />
-                  <Fader
-                    label={c.mix_voice.a}
-                    subLabel={(aproxLevel === 10 || aproxLevel === 11 ? c.mix_voice_origin_10 : c.mix_voice_origin).a}
-                    value={mix.a}
-                    onChange={(v) => setMix((m) => ({ ...m, a: v }))}
-                  />
+                  <div className={aproxLevel === 12 ? "pointer-events-none opacity-30 select-none" : ""}>
+                    <Fader
+                      label={c.mix_voice.a}
+                      subLabel={aproxLevel === 12 ? "—" : (voiceOrigin).a}
+                      value={aproxLevel === 12 ? 0 : mix.a}
+                      onChange={(v) => setMix((m) => ({ ...m, a: v }))}
+                    />
+                  </div>
                   <Fader
                     label={c.mix_voice.t}
-                    subLabel={(aproxLevel === 10 || aproxLevel === 11 ? c.mix_voice_origin_10 : c.mix_voice_origin).t}
+                    subLabel={(voiceOrigin).t}
                     value={mix.t}
                     onChange={(v) => setMix((m) => ({ ...m, t: v }))}
                   />
                   <Fader
                     label={c.mix_voice.b}
-                    subLabel={(aproxLevel === 10 || aproxLevel === 11 ? c.mix_voice_origin_10 : c.mix_voice_origin).b}
+                    subLabel={(voiceOrigin).b}
                     value={mix.b}
                     onChange={(v) => setMix((m) => ({ ...m, b: v }))}
                   />

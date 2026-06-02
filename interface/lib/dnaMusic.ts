@@ -42,8 +42,8 @@ export const SCALES = {
 } as const;
 
 export type ScaleKey = keyof typeof SCALES;
-export type AproxLevel = 5 | 6 | 7 | 8 | 9 | 10 | 11;
-export const APROX_LEVELS: AproxLevel[] = [5, 6, 7, 8, 9, 10, 11];
+export type AproxLevel = 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
+export const APROX_LEVELS: AproxLevel[] = [5, 6, 7, 8, 9, 10, 11, 12];
 
 // Meter: "free" uses the full 5-figure WTC palette; "4/4" restricts to
 // {corchea, negra, blanca} — figures that divide 4/4 measures exactly.
@@ -590,6 +590,72 @@ function generateBassAprox10(
 }
 
 // ============================================================
+// TRIADIC 3-VOICE — Aprox 12
+// ============================================================
+//
+// Voice roles:  S = mg_midi (upper groove, data)
+//               A = silent (aNotes = copy of S, always muted in UI)
+//               T = computed triad completion note
+//               B = mn_midi (lower groove, data)
+//
+// Algorithm: for each tetranucleotide, take B (lowest) as anchor and
+// find the note that completes a major or minor triad with S and B.
+// When both pitch classes are in the same triad → exact match.
+// Otherwise → anchor on B, find nearest triad, pick third note.
+// Octave chosen to minimise distance to the midpoint of B and S.
+//
+// Duration: S uses mg_ticks (sDurs); T and B share mn_ticks (bDurs),
+// so the computed 3rd note inherits the bass figure — same as v4 MIDI.
+
+// All 24 triads precomputed once.
+const TRIADS12 = (() => {
+  const out: { pcs: number[]; root: number; type: 'M' | 'm' }[] = [];
+  for (let r = 0; r < 12; r++) {
+    out.push({ pcs: [r, (r + 4) % 12, (r + 7) % 12], root: r, type: 'M' });
+    out.push({ pcs: [r, (r + 3) % 12, (r + 7) % 12], root: r, type: 'm' });
+  }
+  return out;
+})();
+
+function findTriadThird(midiLow: number, midiHigh: number): number {
+  const pcL = midiLow  % 12;
+  const pcH = midiHigh % 12;
+  const mid = Math.floor((midiLow + midiHigh) / 2);
+  const cd  = (a: number, b: number) => { const d = Math.abs(a - b) % 12; return Math.min(d, 12 - d); };
+
+  let bestPc = -1, bestScore = 999, bestStab = 3;
+
+  for (const t of TRIADS12) {
+    if (!t.pcs.includes(pcL)) continue;
+    const hasH  = pcL !== pcH && t.pcs.includes(pcH);
+    const score = hasH ? 0 : Math.min(...t.pcs.map(p => cd(pcH, p)));
+    const stab  = t.root === pcL ? 0 : ((t.root + 7) % 12 === pcL ? 1 : 2);
+    // Third pc: the triad note that is not pcL (and not pcH for exact matches)
+    const others = t.pcs.filter(p => p !== pcL);
+    const thirdPc = hasH
+      ? (others.find(p => p !== pcH) ?? others[0])
+      : [...others].sort((a, b) => cd(pcH, b) - cd(pcH, a))[0];
+
+    if (score < bestScore || (score === bestScore && stab < bestStab)) {
+      bestScore = score; bestStab = stab; bestPc = thirdPc;
+    }
+  }
+
+  if (bestPc === -1) return mid;
+
+  // Best octave: closest to midpoint, in range D2–D6
+  let bestMidi = mid, bestDist = 9999;
+  for (let oct = 0; oct < 10; oct++) {
+    const c = oct * 12 + bestPc;
+    if (c >= 38 && c <= 86) {
+      const d = Math.abs(c - mid);
+      if (d < bestDist) { bestDist = d; bestMidi = c; }
+    }
+  }
+  return bestMidi;
+}
+
+// ============================================================
 // ARCH FIX VOICES — Aprox 11
 // ============================================================
 //
@@ -1005,6 +1071,14 @@ export function processSequence(
       prevPrevT = prevT;
       prevA = a;
       prevT = t;
+    }
+  } else if (aproxLevel === 12) {
+    // 3-voice triadic: T = triad completion from B→S; A = silent placeholder
+    for (let i = 0; i < tetras.length; i++) {
+      const s = sNotes[i];
+      const b = bNotes[i];
+      tNotes.push(findTriadThird(b, s));
+      aNotes.push(s); // placeholder — always muted by UI for aprox12
     }
   } else if (aproxLevel === 7) {
     // Lookahead path
